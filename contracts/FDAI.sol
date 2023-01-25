@@ -17,12 +17,15 @@ contract FileCoinBridgeDAI is
     ERC20Permit,
     ERC20FlashMint
 {
+    address immutable FILE_BRIDGE;
     address private immutable DAI_TOKEN;
 
     constructor(
-        address _DAI_ADDRESS
+        address _DAI_ADDRESS,
+        address _FILE_BRIDGE
     ) ERC20("FileCoin Bridge DAI", "FDAI") ERC20Permit("FileCoin Bridge DAI") {
         DAI_TOKEN = _DAI_ADDRESS;
+        FILE_BRIDGE = _FILE_BRIDGE;
     }
 
     function pause() public onlyOwner {
@@ -41,7 +44,7 @@ contract FileCoinBridgeDAI is
         _burn(from, amount);
     }
 
-    function deposit(uint256 amount) public {
+    function deposit(uint256 amount) internal {
         TransferHelper.safeTransferFrom(
             DAI_TOKEN,
             _msgSender(),
@@ -51,7 +54,7 @@ contract FileCoinBridgeDAI is
         _mint(_msgSender(), amount);
     }
 
-    function withdraw(uint256 amount) public {
+    function withdraw(uint256 amount) internal {
         _burn(_msgSender(), amount);
         TransferHelper.safeTransfer(DAI_TOKEN, _msgSender(), amount);
     }
