@@ -18,7 +18,7 @@ const deployFileCoinBridgeDai: DeployFunction = async function (
 
     let args: any = [
         mockFileswapV2Factory.address,
-        mockFileswapV2Factory.address,
+        mockFileswapV2Factory.address, // to be fixed for weth/wfil
     ]
     log("Deploying FileswapV2Router02 and waiting for confirmations...")
     let gasData = await ethers.provider.getFeeData()
