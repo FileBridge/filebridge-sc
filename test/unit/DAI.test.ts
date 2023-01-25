@@ -8,7 +8,7 @@ const chainId = network.config.chainId
 if (chainId != 31337) {
     describe.skip
 } else {
-    describe.only("DAI Token Unit Tests", function () {
+    describe("DAI Token Unit Tests", function () {
         let mockDaiToken: DAIToken,
             fileCoinBridgeDAI: FileCoinBridgeDAI,
             deployer: SignerWithAddress

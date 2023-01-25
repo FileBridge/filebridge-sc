@@ -61,6 +61,7 @@ const config: HardhatUserConfig = {
         hyperspace: {
             url: HYPERSPACE_RPC_URL,
             accounts: [wallet1, wallet2, wallet3],
+
             chainId: 3141,
         },
         localhost: {
@@ -79,11 +80,11 @@ const config: HardhatUserConfig = {
     namedAccounts: {
         deployer: {
             default: 0,
-            31337: 0, // ==> for example for goerli chainId it's second account
+            31337: 0,
         },
         guardian: {
             default: 1,
-            31337: 1, // ==> for example for goerli chainId it's second account
+            31337: 1,
         },
     },
     etherscan: {

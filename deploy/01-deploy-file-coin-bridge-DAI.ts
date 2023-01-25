@@ -17,17 +17,19 @@ const deployFileCoinBridgeDai: DeployFunction = async function (
     const mockDaiToken = await ethers.getContract("DAIToken")
     let args: any = [mockDaiToken.address]
     log("Deploying FDAI and waiting for confirmations...")
+    let gasData = await ethers.provider.getFeeData()
     const fileCoinBridgeDAI = await deploy("FileCoinBridgeDAI", {
         from: deployer,
         log: true,
+        maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
         args: args,
-        waitConfirmations: chainId === 31337 ? 1 : 7,
+        waitConfirmations: chainId === 31337 || chainId === 3141 ? 1 : 5,
     })
 
     log(`FDAI deployed at ${fileCoinBridgeDAI.address}`)
     log("__________________________________________________")
 
-    if (chainId != 31337 && process.env.ETHERSCAN_API_KEY) {
+    if (chainId != 31337 && chainId != 3141 && process.env.ETHERSCAN_API_KEY) {
         // verify the code
         await verify(fileCoinBridgeDAI.address, args)
     }
