@@ -4,3 +4,7 @@
 export * as bridgeProxySol from "./BridgeProxy.sol";
 export * as daiSol from "./DAI.sol";
 export * as fdaiSol from "./FDAI.sol";
+export * as fileBridgeSwapCore from "./file_bridge_swap_core";
+export * as fileBridgeSwapPeriphery from "./file_bridge_swap_periphery";
+export { MainBridge__factory } from "./MainBridge__factory";
+export { ProxyBridge__factory } from "./ProxyBridge__factory";
