@@ -15,7 +15,7 @@ import "@openzeppelin/hardhat-upgrades"
 
 const GOERLI_RPC_URL = process.env.GOERLI_RPC_URL!,
     MUMBAI_RPC_URL = process.env.MUMBAI_RPC_URL!,
-    Wallaby_RPC_URL = process.env.Wallaby_RPC_URL!
+    HYPERSPACE_RPC_URL = process.env.HYPERSPACE_RPC_URL!
 
 // Etherscan and Coinmarketcap API key import
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "key"
@@ -44,7 +44,7 @@ const config: HardhatUserConfig = {
     networks: {
         hardhat: {
             // forking: {
-            //     url: GOERLI_RPC_URL,
+            //     url: HYPERSPACE_RPC_URL,
             //     // blockNumber: 3627190,
             // },
         },
@@ -58,10 +58,10 @@ const config: HardhatUserConfig = {
             accounts: [wallet1, wallet2, wallet3],
             chainId: 80001,
         },
-        wallaby: {
-            url: Wallaby_RPC_URL,
+        hyperspace: {
+            url: HYPERSPACE_RPC_URL,
             accounts: [wallet1, wallet2, wallet3],
-            chainId: 80001,
+            chainId: 3141,
         },
         localhost: {
             url: "http://127.0.0.1:8545/",
