@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import verify from "../utils/verify"
 import { ethers } from "hardhat"
 
-const deployFileCoinBridgeDai: DeployFunction = async function (
+const deployFileswapRouter: DeployFunction = async function (
     hre: HardhatRuntimeEnvironment
 ) {
     const { deployments, network, getNamedAccounts } = hre,
@@ -14,12 +14,10 @@ const deployFileCoinBridgeDai: DeployFunction = async function (
 
     const chainId = network.config.chainId
 
-    const mockFileswapV2Factory = await ethers.getContract("FileswapV2Factory")
+    const fileswapV2Factory = await ethers.getContract("FileswapV2Factory")
+    const wFil = await ethers.getContract("WFil")
 
-    let args: any = [
-        mockFileswapV2Factory.address,
-        mockFileswapV2Factory.address, // to be fixed for weth/wfil
-    ]
+    let args: any = [fileswapV2Factory.address, wFil.address]
     log("Deploying FileswapV2Router02 and waiting for confirmations...")
     let gasData = await ethers.provider.getFeeData()
     const fileswapV2Router02 = await deploy("FileswapV2Router02", {
@@ -39,6 +37,6 @@ const deployFileCoinBridgeDai: DeployFunction = async function (
     }
 }
 
-export default deployFileCoinBridgeDai
+export default deployFileswapRouter
 
-deployFileCoinBridgeDai.tags = ["all", "fileswapV2Router02"]
+deployFileswapRouter.tags = ["all", "fileswapV2Router02"]

@@ -8,3 +8,4 @@ export * as fileBridgeSwapCore from "./file_bridge_swap_core";
 export * as fileBridgeSwapPeriphery from "./file_bridge_swap_periphery";
 export { MainBridge__factory } from "./MainBridge__factory";
 export { ProxyBridge__factory } from "./ProxyBridge__factory";
+export { WFil__factory } from "./WFil__factory";

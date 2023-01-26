@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import verify from "../utils/verify"
 import { ethers } from "hardhat"
 
-const deployFileCoinBridgeDai: DeployFunction = async function (
+const deployFileswapFactory: DeployFunction = async function (
     hre: HardhatRuntimeEnvironment
 ) {
     const { deployments, network, getNamedAccounts } = hre,
@@ -34,6 +34,6 @@ const deployFileCoinBridgeDai: DeployFunction = async function (
     }
 }
 
-export default deployFileCoinBridgeDai
+export default deployFileswapFactory
 
-deployFileCoinBridgeDai.tags = ["all", "fileswapV2Factory"]
+deployFileswapFactory.tags = ["all", "fileswapV2Factory"]

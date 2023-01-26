@@ -4,6 +4,8 @@ import {
     DAIToken,
     FileCoinBridgeDAI,
     FileswapV2Factory,
+    FileswapV2Router02,
+    WFil,
 } from "../../typechain-types"
 import { expect } from "chai"
 
@@ -17,6 +19,8 @@ if (chainId != 31337) {
         let mockDaiToken: DAIToken,
             fileCoinBridgeDAI: FileCoinBridgeDAI,
             fileswapV2Factory: FileswapV2Factory,
+            fileswapV2Router02: FileswapV2Router02,
+            wFil: WFil,
             deployer: SignerWithAddress,
             guardian: SignerWithAddress
 
@@ -34,6 +38,11 @@ if (chainId != 31337) {
                 "FileswapV2Factory",
                 deployer
             )
+            fileswapV2Router02 = await ethers.getContract(
+                "FileswapV2Router02",
+                deployer
+            )
+            wFil = await ethers.getContract("WFil", deployer)
 
             await mockDaiToken.mint(deployer.address, amountOfDai.mul(2))
             await mockDaiToken.approve(fileCoinBridgeDAI.address, amountOfDai)
@@ -50,6 +59,22 @@ if (chainId != 31337) {
             const allPairsLength = await fileswapV2Factory.allPairsLength()
 
             expect(allPairsLength).to.eq(1)
+        })
+
+        it("Correctly add liquidity", async () => {
+            const lastBlock = await ethers.provider.getBlock("latest")
+            const deadline = lastBlock.timestamp + 0.5 * 3600
+
+            await fileswapV2Router02.addLiquidity(
+                mockDaiToken.address,
+                fileCoinBridgeDAI.address,
+                amountOfDai,
+                amountOfDai,
+                amountOfDai,
+                amountOfDai,
+                deployer.address,
+                deadline
+            )
         })
     })
 }

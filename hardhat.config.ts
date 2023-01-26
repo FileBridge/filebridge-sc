@@ -8,8 +8,8 @@ import "hardhat-gas-reporter"
 import "dotenv/config"
 import "hardhat-deploy"
 import "solidity-coverage"
-import "hardhat-tracer"
 import "@openzeppelin/hardhat-upgrades"
+import "hardhat-tracer"
 // import { ethers } from "ethers"
 // import fs from "fs-extra"
 
@@ -49,6 +49,15 @@ const config: HardhatUserConfig = {
             },
             {
                 version: "0.6.6",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 1000000,
+                    },
+                },
+            },
+            {
+                version: "0.4.18",
                 settings: {
                     optimizer: {
                         enabled: true,

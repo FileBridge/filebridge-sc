@@ -76,3 +76,5 @@ export type { MainBridge } from "./contracts/MainBridge";
 export { MainBridge__factory } from "./factories/contracts/MainBridge__factory";
 export type { ProxyBridge } from "./contracts/ProxyBridge";
 export { ProxyBridge__factory } from "./factories/contracts/ProxyBridge__factory";
+export type { WFil } from "./contracts/WFil";
+export { WFil__factory } from "./factories/contracts/WFil__factory";

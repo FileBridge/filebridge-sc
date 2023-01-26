@@ -13,3 +13,4 @@ import type * as fileBridgeSwapPeriphery from "./file_bridge_swap_periphery";
 export type { fileBridgeSwapPeriphery };
 export type { MainBridge } from "./MainBridge";
 export type { ProxyBridge } from "./ProxyBridge";
+export type { WFil } from "./WFil";
