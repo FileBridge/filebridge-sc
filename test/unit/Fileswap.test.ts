@@ -15,7 +15,7 @@ const amountOfDai = ethers.utils.parseEther("1000000")
 if (chainId != 31337) {
     describe.skip
 } else {
-    describe.only("DAI Token Unit Tests", function () {
+    describe("DAI Token Unit Tests", function () {
         let mockDaiToken: DAIToken,
             fileCoinBridgeDAI: FileCoinBridgeDAI,
             fileswapV2Factory: FileswapV2Factory,
@@ -61,13 +61,13 @@ if (chainId != 31337) {
             expect(allPairsLength).to.eq(1)
         })
 
-        it("Correctly add liquidity", async () => {
+        it.only("Correctly add liquidity", async () => {
             const lastBlock = await ethers.provider.getBlock("latest")
             const deadline = lastBlock.timestamp + 0.5 * 3600
 
             await fileswapV2Router02.addLiquidity(
-                mockDaiToken.address,
                 fileCoinBridgeDAI.address,
+                mockDaiToken.address,
                 amountOfDai,
                 amountOfDai,
                 amountOfDai,

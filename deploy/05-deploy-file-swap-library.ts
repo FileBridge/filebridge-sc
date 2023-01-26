@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types"
 import verify from "../utils/verify"
 import { ethers } from "hardhat"
 
-const deployFileswapRouter: DeployFunction = async function (
+const deployFileswapLibrary: DeployFunction = async function (
     hre: HardhatRuntimeEnvironment
 ) {
     const { deployments, network, getNamedAccounts } = hre,
@@ -14,13 +14,10 @@ const deployFileswapRouter: DeployFunction = async function (
 
     const chainId = network.config.chainId
 
-    const fileswapV2Factory = await ethers.getContract("FileswapV2Factory")
-    const wFil = await ethers.getContract("WFil")
-
-    let args: any = [fileswapV2Factory.address, wFil.address]
-    log("Deploying FileswapV2Router02 and waiting for confirmations...")
+    let args: any = []
+    log("Deploying FileswapV2Library and waiting for confirmations...")
     let gasData = await ethers.provider.getFeeData()
-    const fileswapV2Router02 = await deploy("FileswapV2Router02", {
+    const fileswapV2Library = await deploy("FileswapV2Library", {
         from: deployer,
         log: true,
         maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
@@ -28,15 +25,15 @@ const deployFileswapRouter: DeployFunction = async function (
         waitConfirmations: chainId === 31337 || chainId === 3141 ? 1 : 5,
     })
 
-    log(`FileswapV2Router02 deployed at ${fileswapV2Router02.address}`)
+    log(`FileswapV2Library deployed at ${fileswapV2Library.address}`)
     log("__________________________________________________")
 
     if (chainId != 31337 && chainId != 3141 && process.env.ETHERSCAN_API_KEY) {
         // verify the code
-        await verify(fileswapV2Router02.address, args)
+        await verify(fileswapV2Library.address, args)
     }
 }
 
-export default deployFileswapRouter
+export default deployFileswapLibrary
 
-deployFileswapRouter.tags = ["all", "fileswapV2Router02"]
+deployFileswapLibrary.tags = ["all", "FileswapV2Library"]
