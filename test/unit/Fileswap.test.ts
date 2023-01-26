@@ -46,7 +46,12 @@ if (chainId != 31337) {
 
             await mockDaiToken.mint(deployer.address, amountOfDai.mul(2))
             await mockDaiToken.approve(fileCoinBridgeDAI.address, amountOfDai)
+            await mockDaiToken.approve(fileswapV2Router02.address, amountOfDai)
             await fileCoinBridgeDAI.deposit(amountOfDai)
+            await fileCoinBridgeDAI.approve(
+                fileswapV2Router02.address,
+                amountOfDai
+            )
         })
 
         it("Create pair function works correctly", async () => {
