@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { network, ethers, deployments } from "hardhat"
 import { expect } from "chai"
-import { FileCoinBridgeDAI } from "../../typechain-types"
+import { FileCoinBridgeDAI, DAIToken } from "../../typechain-types"
 import {
     buildDomainSeparator,
     buildStructHashPermit,
@@ -18,6 +18,7 @@ if (chainId != 31337) {
 } else {
     describe("FDAI Token Unit Tests", function () {
         let fileCoinBridgeDAI: FileCoinBridgeDAI,
+            mockDaiToken: DAIToken,
             deployer: SignerWithAddress,
             acc1: SignerWithAddress,
             acc2: SignerWithAddress,
@@ -35,6 +36,16 @@ if (chainId != 31337) {
             fileCoinBridgeDAI = await ethers.getContract(
                 "FileCoinBridgeDAI",
                 deployer
+            )
+
+            mockDaiToken = await ethers.getContract("DAIToken", deployer)
+            await mockDaiToken.mint(
+                deployer.address,
+                ethers.utils.parseEther("1000000")
+            )
+            await mockDaiToken.approve(
+                fileCoinBridgeDAI.address,
+                ethers.utils.parseEther("1000000")
             )
 
             // EIP712 part
@@ -104,34 +115,34 @@ if (chainId != 31337) {
             })
         })
 
-        describe("mint function", function () {
-            it("It mints token to acc1 account", async () => {
-                await fileCoinBridgeDAI.mint(acc1.address, 1000)
-                const acc1Balance = await fileCoinBridgeDAI.balanceOf(
-                    acc1.address
-                )
-                expect(acc1Balance.toString()).to.eq("1000")
-            })
+        // describe("mint function", function () {
+        //     it("It mints token to acc1 account", async () => {
+        //         await fileCoinBridgeDAI.mint(acc1.address, 1000)
+        //         const acc1Balance = await fileCoinBridgeDAI.balanceOf(
+        //             acc1.address
+        //         )
+        //         expect(acc1Balance.toString()).to.eq("1000")
+        //     })
 
-            it("Changes total supply currectly", async () => {
-                await fileCoinBridgeDAI.mint(acc1.address, 1000)
-                const totalSupply = (
-                    await fileCoinBridgeDAI.totalSupply()
-                ).toString()
-                expect(totalSupply).to.eq("1000")
-            })
+        //     it("Changes total supply currectly", async () => {
+        //         await fileCoinBridgeDAI.mint(acc1.address, 1000)
+        //         const totalSupply = (
+        //             await fileCoinBridgeDAI.totalSupply()
+        //         ).toString()
+        //         expect(totalSupply).to.eq("1000")
+        //     })
 
-            it("Emit Transfer event from address 0 to account 1 1000 token", async () => {
-                await expect(fileCoinBridgeDAI.mint(acc1.address, 1000))
-                    .to.emit(fileCoinBridgeDAI, "Transfer")
-                    .withArgs(ethers.constants.AddressZero, acc1.address, 1000)
-            })
-        })
+        //     it("Emit Transfer event from address 0 to account 1 1000 token", async () => {
+        //         await expect(fileCoinBridgeDAI.mint(acc1.address, 1000))
+        //             .to.emit(fileCoinBridgeDAI, "Transfer")
+        //             .withArgs(ethers.constants.AddressZero, acc1.address, 1000)
+        //     })
+        // })
 
         describe("ERC20", function () {
             describe("transfer function", function () {
                 beforeEach(async () => {
-                    await fileCoinBridgeDAI.mint(deployer.address, 1000)
+                    await fileCoinBridgeDAI.deposit(1000)
                 })
 
                 it("transfer money from deployer to account 1", async () => {
@@ -164,7 +175,7 @@ if (chainId != 31337) {
 
             describe("approve function", function () {
                 beforeEach(async () => {
-                    await fileCoinBridgeDAI.mint(deployer.address, 1000)
+                    await fileCoinBridgeDAI.deposit(1000)
                 })
 
                 it("approve account 1 to spend on behalf of deployer", async () => {
@@ -194,7 +205,7 @@ if (chainId != 31337) {
 
             describe("transferFrom function", function () {
                 beforeEach(async () => {
-                    await fileCoinBridgeDAI.mint(deployer.address, 1000)
+                    await fileCoinBridgeDAI.deposit(1000)
                     await fileCoinBridgeDAI.approve(acc1.address, 1000)
                 })
 
@@ -286,7 +297,7 @@ if (chainId != 31337) {
                     )
                     hashPermit = toTypedDataHash(domainSeperator, structHash)
 
-                    await fileCoinBridgeDAI.mint(acc1.address, 1000)
+                    await fileCoinBridgeDAI.deposit(1000)
                 })
 
                 it("Correctly approve from deployer, message signed by acc1", async () => {

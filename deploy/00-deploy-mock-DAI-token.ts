@@ -1,6 +1,5 @@
 import { DeployFunction } from "hardhat-deploy/dist/types"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
-import { DAIToken } from "../typechain-types"
 import verify from "../utils/verify"
 
 const deployMockDaiToken: DeployFunction = async function (
@@ -32,21 +31,6 @@ const deployMockDaiToken: DeployFunction = async function (
         })
 
         log(`DAI token deployed at ${mockDaiToken.address}`)
-        log("__________________________________________________")
-
-        log(`Minting 1000000 Dai for ${deployer}`)
-        gasData = await ethers.provider.getFeeData()
-        const mockDaiTokenContract = (await ethers.getContract(
-            "DAIToken",
-            deployer
-        )) as DAIToken
-        const txResponse = await mockDaiTokenContract.mint(
-            deployer,
-            ethers.utils.parseEther("1000000"),
-            { maxPriorityFeePerGas: gasData.maxPriorityFeePerGas! }
-        )
-        await txResponse.wait()
-        log(`1000000 Dai minted for ${deployer}`)
         log("__________________________________________________")
 
         if (

@@ -61,10 +61,10 @@ const config: HardhatUserConfig = {
     defaultNetwork: "hardhat",
     networks: {
         hardhat: {
-            forking: {
-                url: GOERLI_RPC_URL,
-                // blockNumber: 3627190,
-            },
+            // forking: {
+            //     url: GOERLI_RPC_URL,
+            //     // blockNumber: 3627190,
+            // },
         },
         goerli: {
             url: GOERLI_RPC_URL,

@@ -9,13 +9,13 @@ const deployFileCoinBridgeDai: DeployFunction = async function (
     const { deployments, network, getNamedAccounts } = hre,
         { deploy, log } = deployments
 
-    const { deployer } = await getNamedAccounts()
+    const { deployer, guardian } = await getNamedAccounts()
     log(`The deployer address is: ${deployer}`)
 
     const chainId = network.config.chainId
 
     const mockDaiToken = await ethers.getContract("DAIToken")
-    let args: any = [mockDaiToken.address, mockDaiToken.address] // the second address to be fixed fileBridge address
+    let args: any = [mockDaiToken.address, guardian] // the second address to be fixed fileBridge address
     log("Deploying FDAI and waiting for confirmations...")
     let gasData = await ethers.provider.getFeeData()
     const fileCoinBridgeDAI = await deploy("FileCoinBridgeDAI", {

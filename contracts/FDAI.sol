@@ -36,15 +36,7 @@ contract FileCoinBridgeDAI is
         _unpause();
     }
 
-    function mint(address to, uint256 amount) public onlyOwner {
-        _mint(to, amount);
-    }
-
-    function burn(address from, uint256 amount) public onlyOwner {
-        _burn(from, amount);
-    }
-
-    function deposit(uint256 amount) internal {
+    function deposit(uint256 amount) public {
         TransferHelper.safeTransferFrom(
             DAI_TOKEN,
             _msgSender(),
@@ -54,7 +46,7 @@ contract FileCoinBridgeDAI is
         _mint(_msgSender(), amount);
     }
 
-    function withdraw(uint256 amount) internal {
+    function withdraw(uint256 amount) public {
         _burn(_msgSender(), amount);
         TransferHelper.safeTransfer(DAI_TOKEN, _msgSender(), amount);
     }

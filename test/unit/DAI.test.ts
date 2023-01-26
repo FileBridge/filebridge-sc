@@ -25,6 +25,10 @@ if (chainId != 31337) {
         })
 
         it(`Corrctly mint 1000000 token to deployer`, async () => {
+            const txResponse = await mockDaiToken.mint(
+                deployer.address,
+                ethers.utils.parseEther("1000000")
+            )
             const deployerBalance = await mockDaiToken.balanceOf(
                 deployer.address
             )
@@ -33,6 +37,10 @@ if (chainId != 31337) {
 
         it("Correctly mint FDAI when depositing DAI", async () => {
             const amountBig = ethers.utils.parseEther("1000")
+            await mockDaiToken.mint(
+                deployer.address,
+                ethers.utils.parseEther("1000000")
+            )
             await mockDaiToken.approve(fileCoinBridgeDAI.address, amountBig)
             await fileCoinBridgeDAI.deposit(amountBig)
             const balanceDAI = await mockDaiToken.balanceOf(deployer.address)
@@ -45,6 +53,10 @@ if (chainId != 31337) {
 
         it("Correctly burn FDAI when withdrawing DAI", async () => {
             const amountBig = ethers.utils.parseEther("1000")
+            await mockDaiToken.mint(
+                deployer.address,
+                ethers.utils.parseEther("1000000")
+            )
             await mockDaiToken.approve(fileCoinBridgeDAI.address, amountBig)
             await fileCoinBridgeDAI.deposit(amountBig)
             await fileCoinBridgeDAI.approve(
