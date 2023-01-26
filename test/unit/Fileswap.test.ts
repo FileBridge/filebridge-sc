@@ -6,6 +6,7 @@ import {
     FileswapV2Factory,
     FileswapV2Router02,
     WFil,
+    FileswapV2Pair,
 } from "../../typechain-types"
 import { expect } from "chai"
 
@@ -15,7 +16,7 @@ const amountOfDai = ethers.utils.parseEther("1000000")
 if (chainId != 31337) {
     describe.skip
 } else {
-    describe("DAI Token Unit Tests", function () {
+    describe("Swap Unit Tests", function () {
         let mockDaiToken: DAIToken,
             fileCoinBridgeDAI: FileCoinBridgeDAI,
             fileswapV2Factory: FileswapV2Factory,
@@ -66,7 +67,7 @@ if (chainId != 31337) {
             expect(allPairsLength).to.eq(1)
         })
 
-        it.only("Correctly add liquidity", async () => {
+        it("Correctly add liquidity", async () => {
             const lastBlock = await ethers.provider.getBlock("latest")
             const deadline = lastBlock.timestamp + 0.5 * 3600
 
@@ -80,6 +81,72 @@ if (chainId != 31337) {
                 deployer.address,
                 deadline
             )
+            const pairAddress = await fileswapV2Factory.getPair(
+                    fileCoinBridgeDAI.address,
+                    mockDaiToken.address
+                ),
+                pair = (await ethers.getContractAt(
+                    "FileswapV2Pair",
+                    pairAddress
+                )) as FileswapV2Pair,
+                lpBalance = await pair.balanceOf(deployer.address)
+            expect(lpBalance).to.eq(amountOfDai.sub(1000)) // MINIMUM_LIQUIDITY
+
+            const daiBalance = await mockDaiToken.balanceOf(pairAddress)
+            const fDaiBalance = await fileCoinBridgeDAI.balanceOf(pairAddress)
+            expect(daiBalance).to.eq(amountOfDai)
+            expect(fDaiBalance).to.eq(amountOfDai)
+        })
+
+        it.only("Correctly swap exact token for token", async () => {
+            const lastBlock = await ethers.provider.getBlock("latest")
+            const deadline = lastBlock.timestamp + 0.5 * 3600
+            await fileswapV2Router02.addLiquidity(
+                fileCoinBridgeDAI.address,
+                mockDaiToken.address,
+                amountOfDai,
+                amountOfDai,
+                amountOfDai,
+                amountOfDai,
+                deployer.address,
+                deadline
+            )
+
+            // lets swap 1000 Dai for Fdai
+            const amountDaiIn = ethers.utils.parseEther("1000")
+            await mockDaiToken.mint(deployer.address, amountDaiIn)
+            await mockDaiToken.approve(fileswapV2Router02.address, amountDaiIn)
+
+            const pairAddress = await fileswapV2Factory.getPair(
+                    fileCoinBridgeDAI.address,
+                    mockDaiToken.address
+                ),
+                pair = (await ethers.getContractAt(
+                    "FileswapV2Pair",
+                    pairAddress
+                )) as FileswapV2Pair
+            const [reserveIn, reserveOut] = await pair.getReserves()
+
+            const expectedFdaiRecieved = await fileswapV2Router02.getAmountOut(
+                amountDaiIn,
+                reserveIn,
+                reserveOut
+            )
+
+            await fileswapV2Router02.swapExactTokensForTokens(
+                amountDaiIn,
+                expectedFdaiRecieved,
+                [mockDaiToken.address, fileCoinBridgeDAI.address],
+                deployer.address,
+                deadline
+            )
+
+            const daiBalance = await mockDaiToken.balanceOf(deployer.address)
+            const fDaiBalance = await fileCoinBridgeDAI.balanceOf(
+                deployer.address
+            )
+            expect(daiBalance).to.eq(0)
+            expect(fDaiBalance).to.eq(expectedFdaiRecieved)
         })
     })
 }
