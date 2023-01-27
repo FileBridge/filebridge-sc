@@ -98,7 +98,7 @@ if (chainId != 31337) {
             expect(fDaiBalance).to.eq(amountOfDai)
         })
 
-        it.only("Correctly swap exact token for token", async () => {
+        it("Correctly swap exact token for token", async () => {
             const lastBlock = await ethers.provider.getBlock("latest")
             const deadline = lastBlock.timestamp + 0.5 * 3600
             await fileswapV2Router02.addLiquidity(
