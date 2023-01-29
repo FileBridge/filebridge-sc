@@ -6,7 +6,8 @@ node_modules
 
 #Hardhat files
 cache
+artifacts
 gas-report.txt
 coverage.json
-deployments
+# deployments
 coverage
