@@ -1,0 +1,90 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ProxyBridge",
+  "sourceName": "contracts/ProxyBridge.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "requester",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "TokensBurnt",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "requester",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "TokensMinted",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_requester",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "burnTokens",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_requester",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "mintTokens",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061017e806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c80630d1118ce1461003b578063f0dda65c14610050575b600080fd5b61004e610049366004610103565b610063565b005b61004e61005e366004610103565b6100b7565b6040805173ffffffffffffffffffffffffffffffffffffffff84168152602081018390527f22d306e0cdbeeb823d6327362b35337dc3125a6aa905b6a014da1b08a5389ba491015b60405180910390a15050565b6040805173ffffffffffffffffffffffffffffffffffffffff84168152602081018390527f3f2c9d57c068687834f0de942a9babb9e5acab57d516d3480a3c16ee165a427391016100ab565b6000806040838503121561011657600080fd5b823573ffffffffffffffffffffffffffffffffffffffff8116811461013a57600080fd5b94602093909301359350505056fea2646970667358221220ed7c23c16f820bcf3f6bc8c12463d5b17774553702c6b5fc33b36ecc1c11aeeb64736f6c634300080a0033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100365760003560e01c80630d1118ce1461003b578063f0dda65c14610050575b600080fd5b61004e610049366004610103565b610063565b005b61004e61005e366004610103565b6100b7565b6040805173ffffffffffffffffffffffffffffffffffffffff84168152602081018390527f22d306e0cdbeeb823d6327362b35337dc3125a6aa905b6a014da1b08a5389ba491015b60405180910390a15050565b6040805173ffffffffffffffffffffffffffffffffffffffff84168152602081018390527f3f2c9d57c068687834f0de942a9babb9e5acab57d516d3480a3c16ee165a427391016100ab565b6000806040838503121561011657600080fd5b823573ffffffffffffffffffffffffffffffffffffffff8116811461013a57600080fd5b94602093909301359350505056fea2646970667358221220ed7c23c16f820bcf3f6bc8c12463d5b17774553702c6b5fc33b36ecc1c11aeeb64736f6c634300080a0033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

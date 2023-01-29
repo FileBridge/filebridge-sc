@@ -21,15 +21,6 @@ contract NodeManagement is AccessControlUpgradeable {
         Terminated
     }
 
-    struct tokenBridgeSig {
-        address to;
-        uint256 chainId;
-        address token;
-        uint256 amount;
-    }
-
-    tokenBridgeSig[] private TokenBridgeSigArray;
-
     // Minimum number of guardian members required to produce a signature.
     uint256 public acceptebleThreshold;
 
@@ -50,13 +41,6 @@ contract NodeManagement is AccessControlUpgradeable {
     // Notification that the guardian has been terminated by the owner.
     // Members no longer need to support this guardian.
     event guardianTerminated();
-
-    /// @notice return the transaction with given transaction id.
-    function getTransaction(
-        uint256 _txId
-    ) external view returns (tokenBridgeSig memory _tx) {
-        _tx = TokenBridgeSigArray[_txId];
-    }
 
     /// @notice Closes guardian when owner decides that they no longer need it.
     /// Releases bonds to the guardian members.
