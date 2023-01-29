@@ -15,7 +15,7 @@ const deployFileBridge: DeployFunction = async function (
 
     const chainId = network.config.chainId
 
-    let args: any = [] // the second address to be fixed fileBridge address
+    let args: any = []
     log("Deploying FileBridge and waiting for confirmations...")
     let gasData = await ethers.provider.getFeeData()
     const fileBridge = await deploy("FileBridge", {

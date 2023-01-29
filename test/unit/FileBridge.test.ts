@@ -1,9 +1,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
 import { deployments, ethers, network } from "hardhat"
 import {
-    DAIToken,
+    Token,
     FileBridge,
-    FileCoinBridgeDAI,
+    FToken,
     FileswapV2Factory,
     FileswapV2Router02,
     WFil,
@@ -23,8 +23,8 @@ if (chainId != 31337) {
             guardian: SignerWithAddress,
             GOVERNANCE_ROLE: string,
             DEFAULT_ADMIN_ROLE: string,
-            mockDaiToken: DAIToken,
-            fileCoinBridgeDAI: FileCoinBridgeDAI,
+            mockToken: Token,
+            fileToken: FToken,
             fileswapV2Factory: FileswapV2Factory,
             fileswapV2Router02: FileswapV2Router02,
             wFil: WFil
@@ -37,11 +37,8 @@ if (chainId != 31337) {
             fileBridge = await ethers.getContract("FileBridge", deployer)
             GOVERNANCE_ROLE = await fileBridge.GOVERNANCE_ROLE()
             DEFAULT_ADMIN_ROLE = await fileBridge.DEFAULT_ADMIN_ROLE()
-            mockDaiToken = await ethers.getContract("DAIToken", deployer)
-            fileCoinBridgeDAI = await ethers.getContract(
-                "FileCoinBridgeDAI",
-                deployer
-            )
+            mockToken = await ethers.getContract("Token", deployer)
+            fileToken = await ethers.getContract("FToken", deployer)
             fileswapV2Factory = await ethers.getContract(
                 "FileswapV2Factory",
                 deployer
@@ -52,9 +49,9 @@ if (chainId != 31337) {
             )
             wFil = await ethers.getContract("WFil", deployer)
 
-            await mockDaiToken.mint(deployer.address, amountOfDai.mul(2))
-            await mockDaiToken.approve(fileCoinBridgeDAI.address, amountOfDai)
-            await fileCoinBridgeDAI.deposit(amountOfDai)
+            await mockToken.mint(deployer.address, amountOfDai.mul(2))
+            await mockToken.approve(fileToken.address, amountOfDai)
+            await fileToken.deposit(amountOfDai)
         })
 
         it("Initialize correctly", async () => {
@@ -75,39 +72,33 @@ if (chainId != 31337) {
             it("Correctly add token to acception token mapping", async () => {
                 expect(
                     await fileBridge.addWToken(
-                        mockDaiToken.address,
-                        fileCoinBridgeDAI.address
+                        mockToken.address,
+                        fileToken.address
                     )
                 ).to.emit("FileBridge", "TokenAddedToList")
 
                 const expectedWToken = await fileBridge.tokenToWTokenMap(
-                    mockDaiToken.address
+                    mockToken.address
                 )
 
-                expect(expectedWToken).to.eq(fileCoinBridgeDAI.address)
+                expect(expectedWToken).to.eq(fileToken.address)
             })
 
             it("Gives error when token already exists", async () => {
-                await fileBridge.addWToken(
-                    mockDaiToken.address,
-                    fileCoinBridgeDAI.address
-                )
+                await fileBridge.addWToken(mockToken.address, fileToken.address)
                 await expect(
-                    fileBridge.addWToken(mockDaiToken.address, deployer.address)
+                    fileBridge.addWToken(mockToken.address, deployer.address)
                 ).to.revertedWithCustomError(fileBridge, "TOKEN_EXIST")
             })
 
             it("Correctly remove token from acception token mapping", async () => {
-                await fileBridge.addWToken(
-                    mockDaiToken.address,
-                    fileCoinBridgeDAI.address
-                )
+                await fileBridge.addWToken(mockToken.address, fileToken.address)
                 expect(
-                    await fileBridge.removeWToken(mockDaiToken.address)
+                    await fileBridge.removeWToken(mockToken.address)
                 ).to.emit("FileBridge", "TokenRemovedFromList")
 
                 const expectedWToken = await fileBridge.tokenToWTokenMap(
-                    mockDaiToken.address
+                    mockToken.address
                 )
 
                 expect(expectedWToken).to.eq(ethers.constants.AddressZero)
@@ -115,24 +106,21 @@ if (chainId != 31337) {
 
             it("Gives error when token doesn't exists", async () => {
                 await expect(
-                    fileBridge.removeWToken(mockDaiToken.address)
+                    fileBridge.removeWToken(mockToken.address)
                 ).to.revertedWithCustomError(fileBridge, "TOKEN_DOESNT_EXIST")
             })
 
             it("Correctly change token in acception token mapping", async () => {
-                await fileBridge.addWToken(
-                    mockDaiToken.address,
-                    fileCoinBridgeDAI.address
-                )
+                await fileBridge.addWToken(mockToken.address, fileToken.address)
                 expect(
                     await fileBridge.changeWToken(
-                        mockDaiToken.address,
+                        mockToken.address,
                         deployer.address
                     )
                 ).to.emit("FileBridge", "TokenRemovedFromList")
 
                 const expectedWToken = await fileBridge.tokenToWTokenMap(
-                    mockDaiToken.address
+                    mockToken.address
                 )
 
                 expect(expectedWToken).to.eq(deployer.address)
@@ -141,8 +129,8 @@ if (chainId != 31337) {
             it("Gives error when token doesn't exists", async () => {
                 await expect(
                     fileBridge.changeWToken(
-                        mockDaiToken.address,
-                        fileCoinBridgeDAI.address
+                        mockToken.address,
+                        fileToken.address
                     )
                 ).to.revertedWithCustomError(fileBridge, "TOKEN_DOESNT_EXIST")
             })
@@ -150,18 +138,15 @@ if (chainId != 31337) {
 
         describe("depositToken functions control", function () {
             beforeEach(async () => {
-                await mockDaiToken.approve(fileBridge.address, amountOfDai)
-                await fileBridge.addWToken(
-                    mockDaiToken.address,
-                    fileCoinBridgeDAI.address
-                )
+                await mockToken.approve(fileBridge.address, amountOfDai)
+                await fileBridge.addWToken(mockToken.address, fileToken.address)
             })
             it("emits event correctly", async () => {
                 expect(
                     await fileBridge.depositToken(
                         deployer.address,
                         1,
-                        mockDaiToken.address,
+                        mockToken.address,
                         amountOfDai
                     )
                 ).to.emit("FileBridge", "TokenDeposit")
@@ -171,17 +156,18 @@ if (chainId != 31337) {
                 await fileBridge.depositToken(
                     deployer.address,
                     1,
-                    mockDaiToken.address,
+                    mockToken.address,
                     amountOfDai
                 )
 
-                const expectedContractBalance =
-                    await fileCoinBridgeDAI.balanceOf(fileBridge.address)
+                const expectedContractBalance = await fileToken.balanceOf(
+                    fileBridge.address
+                )
 
                 expect(expectedContractBalance).to.eq(0)
 
-                const expectedFTokenBalance = await mockDaiToken.balanceOf(
-                    fileCoinBridgeDAI.address
+                const expectedFTokenBalance = await mockToken.balanceOf(
+                    fileToken.address
                 )
                 expect(expectedFTokenBalance).to.eq(amountOfDai.mul(2))
             })
@@ -191,19 +177,15 @@ if (chainId != 31337) {
             const signingKey = new ethers.utils.SigningKey(
                 "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
             )
-            // 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-            // 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+
             beforeEach(async () => {
-                await mockDaiToken.approve(fileBridge.address, amountOfDai)
-                await fileBridge.addWToken(
-                    mockDaiToken.address,
-                    fileCoinBridgeDAI.address
-                )
+                await mockToken.approve(fileBridge.address, amountOfDai)
+                await fileBridge.addWToken(mockToken.address, fileToken.address)
 
                 await fileBridge.depositToken(
                     deployer.address,
                     1,
-                    mockDaiToken.address,
+                    mockToken.address,
                     amountOfDai
                 )
             })
@@ -212,7 +194,7 @@ if (chainId != 31337) {
                 const hash = await fileBridge.redeemTokenHashGenerator(
                     deployer.address,
                     1,
-                    mockDaiToken.address,
+                    mockToken.address,
                     amountOfDai
                 )
 
@@ -221,7 +203,7 @@ if (chainId != 31337) {
                 await fileBridge.redeemToken(
                     deployer.address,
                     1,
-                    mockDaiToken.address,
+                    mockToken.address,
                     amountOfDai,
                     sig.r,
                     sig._vs

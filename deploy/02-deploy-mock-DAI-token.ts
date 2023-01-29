@@ -2,7 +2,7 @@ import { DeployFunction } from "hardhat-deploy/dist/types"
 import { HardhatRuntimeEnvironment } from "hardhat/types"
 import verify from "../utils/verify"
 
-const deployMockDaiToken: DeployFunction = async function (
+const deployToken: DeployFunction = async function (
     hre: HardhatRuntimeEnvironment
 ) {
     const { deployments, network, getNamedAccounts, ethers } = hre,
@@ -17,12 +17,15 @@ const deployMockDaiToken: DeployFunction = async function (
         const { deployer } = await getNamedAccounts()
         log(`The deployer address is: ${deployer}`)
 
-        let args: any = []
-        log("Deploying mock DAI token and waiting for confirmations...")
+        const name = "DAI TOKEN",
+            symbol = "DAI"
+
+        let args: any = [name, symbol]
+        log(`Deploying ${name} and waiting for confirmations...`)
 
         // Geting gas price data
         let gasData = await ethers.provider.getFeeData()
-        const mockDaiToken = await deploy("DAIToken", {
+        const mockToken = await deploy("Token", {
             from: deployer,
             log: true,
             maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
@@ -30,7 +33,7 @@ const deployMockDaiToken: DeployFunction = async function (
             waitConfirmations: chainId === 31337 || chainId === 3141 ? 1 : 5,
         })
 
-        log(`DAI token deployed at ${mockDaiToken.address}`)
+        log(`${name} deployed at ${mockToken.address}`)
         log("__________________________________________________")
 
         if (
@@ -39,11 +42,11 @@ const deployMockDaiToken: DeployFunction = async function (
             process.env.ETHERSCAN_API_KEY
         ) {
             // verify the code
-            await verify(mockDaiToken.address, args)
+            await verify(mockToken.address, args)
         }
     }
 }
 
-export default deployMockDaiToken
+export default deployToken
 
-deployMockDaiToken.tags = ["all", "mockDaiToken"]
+deployToken.tags = ["all", "mockToken"]
