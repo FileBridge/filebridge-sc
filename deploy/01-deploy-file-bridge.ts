@@ -31,7 +31,7 @@ const deployFileBridge: DeployFunction = async function (
         deployer
     )) as FileBridge
 
-    await fileBridgeContract.initialize()
+    await fileBridgeContract.initialize(deployer, [deployer], 1)
 
     log(`FileBridge deployed at ${fileBridge.address}`)
     log("__________________________________________________")

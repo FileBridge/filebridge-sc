@@ -10,8 +10,6 @@ export type { AccessControlUpgradeable } from "./@openzeppelin/contracts-upgrade
 export { AccessControlUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable__factory";
 export type { IAccessControlUpgradeable } from "./@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable";
 export { IAccessControlUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable__factory";
-export type { OwnableUpgradeable } from "./@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable";
-export { OwnableUpgradeable__factory } from "./factories/@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable__factory";
 export type { Initializable } from "./@openzeppelin/contracts-upgradeable/proxy/utils/Initializable";
 export { Initializable__factory } from "./factories/@openzeppelin/contracts-upgradeable/proxy/utils/Initializable__factory";
 export type { PausableUpgradeable } from "./@openzeppelin/contracts-upgradeable/security/PausableUpgradeable";

@@ -43,6 +43,7 @@ export interface FileCoinBridgeDAIInterface extends utils.Interface {
     "getDaiAddress()": FunctionFragment;
     "increaseAllowance(address,uint256)": FunctionFragment;
     "maxFlashLoan(address)": FunctionFragment;
+    "mint(address,uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "nonces(address)": FunctionFragment;
     "owner()": FunctionFragment;
@@ -75,6 +76,7 @@ export interface FileCoinBridgeDAIInterface extends utils.Interface {
       | "getDaiAddress"
       | "increaseAllowance"
       | "maxFlashLoan"
+      | "mint"
       | "name"
       | "nonces"
       | "owner"
@@ -148,6 +150,10 @@ export interface FileCoinBridgeDAIInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "maxFlashLoan",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
@@ -229,6 +235,7 @@ export interface FileCoinBridgeDAIInterface extends utils.Interface {
     functionFragment: "maxFlashLoan",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
@@ -420,6 +427,12 @@ export interface FileCoinBridgeDAI extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    mint(
+      to: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     name(overrides?: CallOverrides): Promise<[string]>;
 
     nonces(
@@ -552,6 +565,12 @@ export interface FileCoinBridgeDAI extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  mint(
+    to: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   name(overrides?: CallOverrides): Promise<string>;
 
   nonces(
@@ -683,6 +702,12 @@ export interface FileCoinBridgeDAI extends BaseContract {
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    mint(
+      to: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -850,6 +875,12 @@ export interface FileCoinBridgeDAI extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    mint(
+      to: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
     nonces(
@@ -981,6 +1012,12 @@ export interface FileCoinBridgeDAI extends BaseContract {
     maxFlashLoan(
       token: PromiseOrValue<string>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    mint(
+      to: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;

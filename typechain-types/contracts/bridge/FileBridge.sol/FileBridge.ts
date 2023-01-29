@@ -31,25 +31,29 @@ export interface FileBridgeInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
     "GOVERNANCE_ROLE()": FunctionFragment;
+    "GUARDIAN_ROLE()": FunctionFragment;
     "WFIL_ADDRESS()": FunctionFragment;
+    "acceptebleThreshold()": FunctionFragment;
     "addWToken(address,address)": FunctionFragment;
     "bridgeVersion()": FunctionFragment;
-    "chainGasAmount()": FunctionFragment;
     "changeWToken(address,address)": FunctionFragment;
+    "closeguardian()": FunctionFragment;
     "depositToken(address,uint256,address,uint256)": FunctionFragment;
     "getFeeBalance(address)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "initialize()": FunctionFragment;
+    "initialize(address,address[],uint256)": FunctionFragment;
+    "isActive()": FunctionFragment;
+    "isClosed()": FunctionFragment;
+    "isTerminated()": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
-    "redeemToken(address,uint256,address,uint256)": FunctionFragment;
-    "redeemV2(bytes32,uint256,address,uint256)": FunctionFragment;
+    "redeemToken(address,uint256,address,uint256,bytes32,bytes32)": FunctionFragment;
+    "redeemTokenHashGenerator(address,uint256,address,uint256)": FunctionFragment;
     "removeWToken(address)": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "setChainGasAmount(uint256)": FunctionFragment;
     "setWethAddress(address)": FunctionFragment;
     "startBlockNumber()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
@@ -62,25 +66,29 @@ export interface FileBridgeInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "DEFAULT_ADMIN_ROLE"
       | "GOVERNANCE_ROLE"
+      | "GUARDIAN_ROLE"
       | "WFIL_ADDRESS"
+      | "acceptebleThreshold"
       | "addWToken"
       | "bridgeVersion"
-      | "chainGasAmount"
       | "changeWToken"
+      | "closeguardian"
       | "depositToken"
       | "getFeeBalance"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
       | "initialize"
+      | "isActive"
+      | "isClosed"
+      | "isTerminated"
       | "pause"
       | "paused"
       | "redeemToken"
-      | "redeemV2"
+      | "redeemTokenHashGenerator"
       | "removeWToken"
       | "renounceRole"
       | "revokeRole"
-      | "setChainGasAmount"
       | "setWethAddress"
       | "startBlockNumber"
       | "supportsInterface"
@@ -98,7 +106,15 @@ export interface FileBridgeInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "GUARDIAN_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "WFIL_ADDRESS",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "acceptebleThreshold",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -110,12 +126,12 @@ export interface FileBridgeInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "chainGasAmount",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "changeWToken",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "closeguardian",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "depositToken",
@@ -144,6 +160,16 @@ export interface FileBridgeInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<string>[],
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(functionFragment: "isActive", values?: undefined): string;
+  encodeFunctionData(functionFragment: "isClosed", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "isTerminated",
     values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
@@ -154,13 +180,15 @@ export interface FileBridgeInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
-      PromiseOrValue<BigNumberish>
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "redeemV2",
+    functionFragment: "redeemTokenHashGenerator",
     values: [
-      PromiseOrValue<BytesLike>,
+      PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
@@ -177,10 +205,6 @@ export interface FileBridgeInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "revokeRole",
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setChainGasAmount",
-    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "setWethAddress",
@@ -213,7 +237,15 @@ export interface FileBridgeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "GUARDIAN_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "WFIL_ADDRESS",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "acceptebleThreshold",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "addWToken", data: BytesLike): Result;
@@ -222,11 +254,11 @@ export interface FileBridgeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "chainGasAmount",
+    functionFragment: "changeWToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "changeWToken",
+    functionFragment: "closeguardian",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -244,13 +276,22 @@ export interface FileBridgeInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "isActive", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "isClosed", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isTerminated",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "redeemToken",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "redeemV2", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "redeemTokenHashGenerator",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "removeWToken",
     data: BytesLike
@@ -260,10 +301,6 @@ export interface FileBridgeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "setChainGasAmount",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "setWethAddress",
     data: BytesLike
@@ -295,17 +332,11 @@ export interface FileBridgeInterface extends utils.Interface {
     "TokenAddedToList(address,address)": EventFragment;
     "TokenChangedInList(address,address,address)": EventFragment;
     "TokenDeposit(address,uint256,address,uint256)": EventFragment;
-    "TokenDepositAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)": EventFragment;
-    "TokenMint(address,address,uint256,uint256,bytes32)": EventFragment;
-    "TokenMintAndSwap(address,address,uint256,uint256,uint8,uint8,uint256,uint256,bool,bytes32)": EventFragment;
     "TokenRedeem(address,uint256,address,uint256)": EventFragment;
-    "TokenRedeemAndRemove(address,uint256,address,uint256,uint8,uint256,uint256)": EventFragment;
-    "TokenRedeemAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)": EventFragment;
-    "TokenRedeemV2(bytes32,uint256,address,uint256)": EventFragment;
     "TokenRemovedFromList(address)": EventFragment;
-    "TokenWithdraw(address,address,uint256,uint256,bytes32)": EventFragment;
-    "TokenWithdrawAndRemove(address,address,uint256,uint256,uint8,uint256,uint256,bool,bytes32)": EventFragment;
     "Unpaused(address)": EventFragment;
+    "guardianClosed()": EventFragment;
+    "guardianTerminated()": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
@@ -316,17 +347,11 @@ export interface FileBridgeInterface extends utils.Interface {
   getEvent(nameOrSignatureOrTopic: "TokenAddedToList"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenChangedInList"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenDeposit"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenDepositAndSwap"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenMint"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenMintAndSwap"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenRedeem"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenRedeemAndRemove"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenRedeemAndSwap"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenRedeemV2"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenRemovedFromList"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenWithdraw"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenWithdrawAndRemove"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "guardianClosed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "guardianTerminated"): EventFragment;
 }
 
 export interface InitializedEventObject {
@@ -418,69 +443,6 @@ export type TokenDepositEvent = TypedEvent<
 
 export type TokenDepositEventFilter = TypedEventFilter<TokenDepositEvent>;
 
-export interface TokenDepositAndSwapEventObject {
-  to: string;
-  chainId: BigNumber;
-  token: string;
-  amount: BigNumber;
-  tokenIndexFrom: number;
-  tokenIndexTo: number;
-  minDy: BigNumber;
-  deadline: BigNumber;
-}
-export type TokenDepositAndSwapEvent = TypedEvent<
-  [string, BigNumber, string, BigNumber, number, number, BigNumber, BigNumber],
-  TokenDepositAndSwapEventObject
->;
-
-export type TokenDepositAndSwapEventFilter =
-  TypedEventFilter<TokenDepositAndSwapEvent>;
-
-export interface TokenMintEventObject {
-  to: string;
-  token: string;
-  amount: BigNumber;
-  fee: BigNumber;
-  kappa: string;
-}
-export type TokenMintEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber, string],
-  TokenMintEventObject
->;
-
-export type TokenMintEventFilter = TypedEventFilter<TokenMintEvent>;
-
-export interface TokenMintAndSwapEventObject {
-  to: string;
-  token: string;
-  amount: BigNumber;
-  fee: BigNumber;
-  tokenIndexFrom: number;
-  tokenIndexTo: number;
-  minDy: BigNumber;
-  deadline: BigNumber;
-  swapSuccess: boolean;
-  kappa: string;
-}
-export type TokenMintAndSwapEvent = TypedEvent<
-  [
-    string,
-    string,
-    BigNumber,
-    BigNumber,
-    number,
-    number,
-    BigNumber,
-    BigNumber,
-    boolean,
-    string
-  ],
-  TokenMintAndSwapEventObject
->;
-
-export type TokenMintAndSwapEventFilter =
-  TypedEventFilter<TokenMintAndSwapEvent>;
-
 export interface TokenRedeemEventObject {
   to: string;
   chainId: BigNumber;
@@ -494,54 +456,6 @@ export type TokenRedeemEvent = TypedEvent<
 
 export type TokenRedeemEventFilter = TypedEventFilter<TokenRedeemEvent>;
 
-export interface TokenRedeemAndRemoveEventObject {
-  to: string;
-  chainId: BigNumber;
-  token: string;
-  amount: BigNumber;
-  swapTokenIndex: number;
-  swapMinAmount: BigNumber;
-  swapDeadline: BigNumber;
-}
-export type TokenRedeemAndRemoveEvent = TypedEvent<
-  [string, BigNumber, string, BigNumber, number, BigNumber, BigNumber],
-  TokenRedeemAndRemoveEventObject
->;
-
-export type TokenRedeemAndRemoveEventFilter =
-  TypedEventFilter<TokenRedeemAndRemoveEvent>;
-
-export interface TokenRedeemAndSwapEventObject {
-  to: string;
-  chainId: BigNumber;
-  token: string;
-  amount: BigNumber;
-  tokenIndexFrom: number;
-  tokenIndexTo: number;
-  minDy: BigNumber;
-  deadline: BigNumber;
-}
-export type TokenRedeemAndSwapEvent = TypedEvent<
-  [string, BigNumber, string, BigNumber, number, number, BigNumber, BigNumber],
-  TokenRedeemAndSwapEventObject
->;
-
-export type TokenRedeemAndSwapEventFilter =
-  TypedEventFilter<TokenRedeemAndSwapEvent>;
-
-export interface TokenRedeemV2EventObject {
-  to: string;
-  chainId: BigNumber;
-  token: string;
-  amount: BigNumber;
-}
-export type TokenRedeemV2Event = TypedEvent<
-  [string, BigNumber, string, BigNumber],
-  TokenRedeemV2EventObject
->;
-
-export type TokenRedeemV2EventFilter = TypedEventFilter<TokenRedeemV2Event>;
-
 export interface TokenRemovedFromListEventObject {
   _token: string;
 }
@@ -553,55 +467,26 @@ export type TokenRemovedFromListEvent = TypedEvent<
 export type TokenRemovedFromListEventFilter =
   TypedEventFilter<TokenRemovedFromListEvent>;
 
-export interface TokenWithdrawEventObject {
-  to: string;
-  token: string;
-  amount: BigNumber;
-  fee: BigNumber;
-  kappa: string;
-}
-export type TokenWithdrawEvent = TypedEvent<
-  [string, string, BigNumber, BigNumber, string],
-  TokenWithdrawEventObject
->;
-
-export type TokenWithdrawEventFilter = TypedEventFilter<TokenWithdrawEvent>;
-
-export interface TokenWithdrawAndRemoveEventObject {
-  to: string;
-  token: string;
-  amount: BigNumber;
-  fee: BigNumber;
-  swapTokenIndex: number;
-  swapMinAmount: BigNumber;
-  swapDeadline: BigNumber;
-  swapSuccess: boolean;
-  kappa: string;
-}
-export type TokenWithdrawAndRemoveEvent = TypedEvent<
-  [
-    string,
-    string,
-    BigNumber,
-    BigNumber,
-    number,
-    BigNumber,
-    BigNumber,
-    boolean,
-    string
-  ],
-  TokenWithdrawAndRemoveEventObject
->;
-
-export type TokenWithdrawAndRemoveEventFilter =
-  TypedEventFilter<TokenWithdrawAndRemoveEvent>;
-
 export interface UnpausedEventObject {
   account: string;
 }
 export type UnpausedEvent = TypedEvent<[string], UnpausedEventObject>;
 
 export type UnpausedEventFilter = TypedEventFilter<UnpausedEvent>;
+
+export interface guardianClosedEventObject {}
+export type guardianClosedEvent = TypedEvent<[], guardianClosedEventObject>;
+
+export type guardianClosedEventFilter = TypedEventFilter<guardianClosedEvent>;
+
+export interface guardianTerminatedEventObject {}
+export type guardianTerminatedEvent = TypedEvent<
+  [],
+  guardianTerminatedEventObject
+>;
+
+export type guardianTerminatedEventFilter =
+  TypedEventFilter<guardianTerminatedEvent>;
 
 export interface FileBridge extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -634,7 +519,11 @@ export interface FileBridge extends BaseContract {
 
     GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
+    GUARDIAN_ROLE(overrides?: CallOverrides): Promise<[string]>;
+
     WFIL_ADDRESS(overrides?: CallOverrides): Promise<[string]>;
+
+    acceptebleThreshold(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     addWToken(
       _token: PromiseOrValue<string>,
@@ -644,11 +533,13 @@ export interface FileBridge extends BaseContract {
 
     bridgeVersion(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    chainGasAmount(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     changeWToken(
       _token: PromiseOrValue<string>,
       _fToken: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    closeguardian(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -683,8 +574,17 @@ export interface FileBridge extends BaseContract {
     ): Promise<[boolean]>;
 
     initialize(
+      _owner: PromiseOrValue<string>,
+      _members: PromiseOrValue<string>[],
+      _honestThreshold: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    isActive(overrides?: CallOverrides): Promise<[boolean]>;
+
+    isClosed(overrides?: CallOverrides): Promise<[boolean]>;
+
+    isTerminated(overrides?: CallOverrides): Promise<[boolean]>;
 
     pause(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -697,16 +597,18 @@ export interface FileBridge extends BaseContract {
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    redeemV2(
-      to: PromiseOrValue<BytesLike>,
+    redeemTokenHashGenerator(
+      to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
+      overrides?: CallOverrides
+    ): Promise<[string] & { hash: string }>;
 
     removeWToken(
       _token: PromiseOrValue<string>,
@@ -722,11 +624,6 @@ export interface FileBridge extends BaseContract {
     revokeRole(
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
-    setChainGasAmount(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -762,7 +659,11 @@ export interface FileBridge extends BaseContract {
 
   GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<string>;
 
+  GUARDIAN_ROLE(overrides?: CallOverrides): Promise<string>;
+
   WFIL_ADDRESS(overrides?: CallOverrides): Promise<string>;
+
+  acceptebleThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
   addWToken(
     _token: PromiseOrValue<string>,
@@ -772,11 +673,13 @@ export interface FileBridge extends BaseContract {
 
   bridgeVersion(overrides?: CallOverrides): Promise<BigNumber>;
 
-  chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>;
-
   changeWToken(
     _token: PromiseOrValue<string>,
     _fToken: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  closeguardian(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -811,8 +714,17 @@ export interface FileBridge extends BaseContract {
   ): Promise<boolean>;
 
   initialize(
+    _owner: PromiseOrValue<string>,
+    _members: PromiseOrValue<string>[],
+    _honestThreshold: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  isActive(overrides?: CallOverrides): Promise<boolean>;
+
+  isClosed(overrides?: CallOverrides): Promise<boolean>;
+
+  isTerminated(overrides?: CallOverrides): Promise<boolean>;
 
   pause(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -825,16 +737,18 @@ export interface FileBridge extends BaseContract {
     chainId: PromiseOrValue<BigNumberish>,
     token: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
+    r: PromiseOrValue<BytesLike>,
+    vs: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  redeemV2(
-    to: PromiseOrValue<BytesLike>,
+  redeemTokenHashGenerator(
+    to: PromiseOrValue<string>,
     chainId: PromiseOrValue<BigNumberish>,
     token: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   removeWToken(
     _token: PromiseOrValue<string>,
@@ -850,11 +764,6 @@ export interface FileBridge extends BaseContract {
   revokeRole(
     role: PromiseOrValue<BytesLike>,
     account: PromiseOrValue<string>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
-  setChainGasAmount(
-    amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -890,7 +799,11 @@ export interface FileBridge extends BaseContract {
 
     GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<string>;
 
+    GUARDIAN_ROLE(overrides?: CallOverrides): Promise<string>;
+
     WFIL_ADDRESS(overrides?: CallOverrides): Promise<string>;
+
+    acceptebleThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
     addWToken(
       _token: PromiseOrValue<string>,
@@ -900,13 +813,13 @@ export interface FileBridge extends BaseContract {
 
     bridgeVersion(overrides?: CallOverrides): Promise<BigNumber>;
 
-    chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>;
-
     changeWToken(
       _token: PromiseOrValue<string>,
       _fToken: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    closeguardian(overrides?: CallOverrides): Promise<void>;
 
     depositToken(
       to: PromiseOrValue<string>,
@@ -938,7 +851,18 @@ export interface FileBridge extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    initialize(overrides?: CallOverrides): Promise<void>;
+    initialize(
+      _owner: PromiseOrValue<string>,
+      _members: PromiseOrValue<string>[],
+      _honestThreshold: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    isActive(overrides?: CallOverrides): Promise<boolean>;
+
+    isClosed(overrides?: CallOverrides): Promise<boolean>;
+
+    isTerminated(overrides?: CallOverrides): Promise<boolean>;
 
     pause(overrides?: CallOverrides): Promise<void>;
 
@@ -949,16 +873,18 @@ export interface FileBridge extends BaseContract {
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    redeemV2(
-      to: PromiseOrValue<BytesLike>,
+    redeemTokenHashGenerator(
+      to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<string>;
 
     removeWToken(
       _token: PromiseOrValue<string>,
@@ -974,11 +900,6 @@ export interface FileBridge extends BaseContract {
     revokeRole(
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setChainGasAmount(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1081,67 +1002,6 @@ export interface FileBridge extends BaseContract {
       amount?: null
     ): TokenDepositEventFilter;
 
-    "TokenDepositAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)"(
-      to?: PromiseOrValue<string> | null,
-      chainId?: null,
-      token?: null,
-      amount?: null,
-      tokenIndexFrom?: null,
-      tokenIndexTo?: null,
-      minDy?: null,
-      deadline?: null
-    ): TokenDepositAndSwapEventFilter;
-    TokenDepositAndSwap(
-      to?: PromiseOrValue<string> | null,
-      chainId?: null,
-      token?: null,
-      amount?: null,
-      tokenIndexFrom?: null,
-      tokenIndexTo?: null,
-      minDy?: null,
-      deadline?: null
-    ): TokenDepositAndSwapEventFilter;
-
-    "TokenMint(address,address,uint256,uint256,bytes32)"(
-      to?: PromiseOrValue<string> | null,
-      token?: null,
-      amount?: null,
-      fee?: null,
-      kappa?: PromiseOrValue<BytesLike> | null
-    ): TokenMintEventFilter;
-    TokenMint(
-      to?: PromiseOrValue<string> | null,
-      token?: null,
-      amount?: null,
-      fee?: null,
-      kappa?: PromiseOrValue<BytesLike> | null
-    ): TokenMintEventFilter;
-
-    "TokenMintAndSwap(address,address,uint256,uint256,uint8,uint8,uint256,uint256,bool,bytes32)"(
-      to?: PromiseOrValue<string> | null,
-      token?: null,
-      amount?: null,
-      fee?: null,
-      tokenIndexFrom?: null,
-      tokenIndexTo?: null,
-      minDy?: null,
-      deadline?: null,
-      swapSuccess?: null,
-      kappa?: PromiseOrValue<BytesLike> | null
-    ): TokenMintAndSwapEventFilter;
-    TokenMintAndSwap(
-      to?: PromiseOrValue<string> | null,
-      token?: null,
-      amount?: null,
-      fee?: null,
-      tokenIndexFrom?: null,
-      tokenIndexTo?: null,
-      minDy?: null,
-      deadline?: null,
-      swapSuccess?: null,
-      kappa?: PromiseOrValue<BytesLike> | null
-    ): TokenMintAndSwapEventFilter;
-
     "TokenRedeem(address,uint256,address,uint256)"(
       to?: PromiseOrValue<string> | null,
       chainId?: null,
@@ -1155,104 +1015,19 @@ export interface FileBridge extends BaseContract {
       amount?: null
     ): TokenRedeemEventFilter;
 
-    "TokenRedeemAndRemove(address,uint256,address,uint256,uint8,uint256,uint256)"(
-      to?: PromiseOrValue<string> | null,
-      chainId?: null,
-      token?: null,
-      amount?: null,
-      swapTokenIndex?: null,
-      swapMinAmount?: null,
-      swapDeadline?: null
-    ): TokenRedeemAndRemoveEventFilter;
-    TokenRedeemAndRemove(
-      to?: PromiseOrValue<string> | null,
-      chainId?: null,
-      token?: null,
-      amount?: null,
-      swapTokenIndex?: null,
-      swapMinAmount?: null,
-      swapDeadline?: null
-    ): TokenRedeemAndRemoveEventFilter;
-
-    "TokenRedeemAndSwap(address,uint256,address,uint256,uint8,uint8,uint256,uint256)"(
-      to?: PromiseOrValue<string> | null,
-      chainId?: null,
-      token?: null,
-      amount?: null,
-      tokenIndexFrom?: null,
-      tokenIndexTo?: null,
-      minDy?: null,
-      deadline?: null
-    ): TokenRedeemAndSwapEventFilter;
-    TokenRedeemAndSwap(
-      to?: PromiseOrValue<string> | null,
-      chainId?: null,
-      token?: null,
-      amount?: null,
-      tokenIndexFrom?: null,
-      tokenIndexTo?: null,
-      minDy?: null,
-      deadline?: null
-    ): TokenRedeemAndSwapEventFilter;
-
-    "TokenRedeemV2(bytes32,uint256,address,uint256)"(
-      to?: PromiseOrValue<BytesLike> | null,
-      chainId?: null,
-      token?: null,
-      amount?: null
-    ): TokenRedeemV2EventFilter;
-    TokenRedeemV2(
-      to?: PromiseOrValue<BytesLike> | null,
-      chainId?: null,
-      token?: null,
-      amount?: null
-    ): TokenRedeemV2EventFilter;
-
     "TokenRemovedFromList(address)"(
       _token?: null
     ): TokenRemovedFromListEventFilter;
     TokenRemovedFromList(_token?: null): TokenRemovedFromListEventFilter;
 
-    "TokenWithdraw(address,address,uint256,uint256,bytes32)"(
-      to?: PromiseOrValue<string> | null,
-      token?: null,
-      amount?: null,
-      fee?: null,
-      kappa?: PromiseOrValue<BytesLike> | null
-    ): TokenWithdrawEventFilter;
-    TokenWithdraw(
-      to?: PromiseOrValue<string> | null,
-      token?: null,
-      amount?: null,
-      fee?: null,
-      kappa?: PromiseOrValue<BytesLike> | null
-    ): TokenWithdrawEventFilter;
-
-    "TokenWithdrawAndRemove(address,address,uint256,uint256,uint8,uint256,uint256,bool,bytes32)"(
-      to?: PromiseOrValue<string> | null,
-      token?: null,
-      amount?: null,
-      fee?: null,
-      swapTokenIndex?: null,
-      swapMinAmount?: null,
-      swapDeadline?: null,
-      swapSuccess?: null,
-      kappa?: PromiseOrValue<BytesLike> | null
-    ): TokenWithdrawAndRemoveEventFilter;
-    TokenWithdrawAndRemove(
-      to?: PromiseOrValue<string> | null,
-      token?: null,
-      amount?: null,
-      fee?: null,
-      swapTokenIndex?: null,
-      swapMinAmount?: null,
-      swapDeadline?: null,
-      swapSuccess?: null,
-      kappa?: PromiseOrValue<BytesLike> | null
-    ): TokenWithdrawAndRemoveEventFilter;
-
     "Unpaused(address)"(account?: null): UnpausedEventFilter;
     Unpaused(account?: null): UnpausedEventFilter;
+
+    "guardianClosed()"(): guardianClosedEventFilter;
+    guardianClosed(): guardianClosedEventFilter;
+
+    "guardianTerminated()"(): guardianTerminatedEventFilter;
+    guardianTerminated(): guardianTerminatedEventFilter;
   };
 
   estimateGas: {
@@ -1260,7 +1035,11 @@ export interface FileBridge extends BaseContract {
 
     GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
+    GUARDIAN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+
     WFIL_ADDRESS(overrides?: CallOverrides): Promise<BigNumber>;
+
+    acceptebleThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
     addWToken(
       _token: PromiseOrValue<string>,
@@ -1270,11 +1049,13 @@ export interface FileBridge extends BaseContract {
 
     bridgeVersion(overrides?: CallOverrides): Promise<BigNumber>;
 
-    chainGasAmount(overrides?: CallOverrides): Promise<BigNumber>;
-
     changeWToken(
       _token: PromiseOrValue<string>,
       _fToken: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    closeguardian(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1309,8 +1090,17 @@ export interface FileBridge extends BaseContract {
     ): Promise<BigNumber>;
 
     initialize(
+      _owner: PromiseOrValue<string>,
+      _members: PromiseOrValue<string>[],
+      _honestThreshold: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
+
+    isActive(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isClosed(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isTerminated(overrides?: CallOverrides): Promise<BigNumber>;
 
     pause(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1323,15 +1113,17 @@ export interface FileBridge extends BaseContract {
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    redeemV2(
-      to: PromiseOrValue<BytesLike>,
+    redeemTokenHashGenerator(
+      to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     removeWToken(
@@ -1348,11 +1140,6 @@ export interface FileBridge extends BaseContract {
     revokeRole(
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
-    setChainGasAmount(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1391,7 +1178,13 @@ export interface FileBridge extends BaseContract {
 
     GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    GUARDIAN_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     WFIL_ADDRESS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    acceptebleThreshold(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     addWToken(
       _token: PromiseOrValue<string>,
@@ -1401,11 +1194,13 @@ export interface FileBridge extends BaseContract {
 
     bridgeVersion(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    chainGasAmount(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     changeWToken(
       _token: PromiseOrValue<string>,
       _fToken: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    closeguardian(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1440,8 +1235,17 @@ export interface FileBridge extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     initialize(
+      _owner: PromiseOrValue<string>,
+      _members: PromiseOrValue<string>[],
+      _honestThreshold: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
+
+    isActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    isClosed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    isTerminated(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     pause(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1454,15 +1258,17 @@ export interface FileBridge extends BaseContract {
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
-    redeemV2(
-      to: PromiseOrValue<BytesLike>,
+    redeemTokenHashGenerator(
+      to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     removeWToken(
@@ -1479,11 +1285,6 @@ export interface FileBridge extends BaseContract {
     revokeRole(
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setChainGasAmount(
-      amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

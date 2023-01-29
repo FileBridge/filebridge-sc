@@ -4,7 +4,6 @@
 import type {
   BaseContract,
   BigNumber,
-  BigNumberish,
   BytesLike,
   CallOverrides,
   ContractTransaction,
@@ -30,14 +29,13 @@ import type {
 export interface NodeManagementInterface extends utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
+    "GOVERNANCE_ROLE()": FunctionFragment;
     "GUARDIAN_ROLE()": FunctionFragment;
     "acceptebleThreshold()": FunctionFragment;
     "closeguardian()": FunctionFragment;
-    "getOpenedTimestamp()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "initialize(address,address[],uint256)": FunctionFragment;
     "isActive()": FunctionFragment;
     "isClosed()": FunctionFragment;
     "isTerminated()": FunctionFragment;
@@ -49,14 +47,13 @@ export interface NodeManagementInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "DEFAULT_ADMIN_ROLE"
+      | "GOVERNANCE_ROLE"
       | "GUARDIAN_ROLE"
       | "acceptebleThreshold"
       | "closeguardian"
-      | "getOpenedTimestamp"
       | "getRoleAdmin"
       | "grantRole"
       | "hasRole"
-      | "initialize"
       | "isActive"
       | "isClosed"
       | "isTerminated"
@@ -67,6 +64,10 @@ export interface NodeManagementInterface extends utils.Interface {
 
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "GOVERNANCE_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -82,10 +83,6 @@ export interface NodeManagementInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "getOpenedTimestamp",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [PromiseOrValue<BytesLike>]
   ): string;
@@ -96,14 +93,6 @@ export interface NodeManagementInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "hasRole",
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<string>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "initialize",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>[],
-      PromiseOrValue<BigNumberish>
-    ]
   ): string;
   encodeFunctionData(functionFragment: "isActive", values?: undefined): string;
   encodeFunctionData(functionFragment: "isClosed", values?: undefined): string;
@@ -129,6 +118,10 @@ export interface NodeManagementInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "GOVERNANCE_ROLE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "GUARDIAN_ROLE",
     data: BytesLike
   ): Result;
@@ -141,16 +134,11 @@ export interface NodeManagementInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "getOpenedTimestamp",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isActive", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "isClosed", data: BytesLike): Result;
   decodeFunctionResult(
@@ -271,6 +259,8 @@ export interface NodeManagement extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
+    GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<[string]>;
+
     GUARDIAN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     acceptebleThreshold(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -278,8 +268,6 @@ export interface NodeManagement extends BaseContract {
     closeguardian(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
-
-    getOpenedTimestamp(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     getRoleAdmin(
       role: PromiseOrValue<BytesLike>,
@@ -297,13 +285,6 @@ export interface NodeManagement extends BaseContract {
       account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
-
-    initialize(
-      _owner: PromiseOrValue<string>,
-      _members: PromiseOrValue<string>[],
-      _honestThreshold: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
 
     isActive(overrides?: CallOverrides): Promise<[boolean]>;
 
@@ -331,6 +312,8 @@ export interface NodeManagement extends BaseContract {
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
+  GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<string>;
+
   GUARDIAN_ROLE(overrides?: CallOverrides): Promise<string>;
 
   acceptebleThreshold(overrides?: CallOverrides): Promise<BigNumber>;
@@ -338,8 +321,6 @@ export interface NodeManagement extends BaseContract {
   closeguardian(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
-
-  getOpenedTimestamp(overrides?: CallOverrides): Promise<BigNumber>;
 
   getRoleAdmin(
     role: PromiseOrValue<BytesLike>,
@@ -357,13 +338,6 @@ export interface NodeManagement extends BaseContract {
     account: PromiseOrValue<string>,
     overrides?: CallOverrides
   ): Promise<boolean>;
-
-  initialize(
-    _owner: PromiseOrValue<string>,
-    _members: PromiseOrValue<string>[],
-    _honestThreshold: PromiseOrValue<BigNumberish>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
 
   isActive(overrides?: CallOverrides): Promise<boolean>;
 
@@ -391,13 +365,13 @@ export interface NodeManagement extends BaseContract {
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
+    GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<string>;
+
     GUARDIAN_ROLE(overrides?: CallOverrides): Promise<string>;
 
     acceptebleThreshold(overrides?: CallOverrides): Promise<BigNumber>;
 
     closeguardian(overrides?: CallOverrides): Promise<void>;
-
-    getOpenedTimestamp(overrides?: CallOverrides): Promise<BigNumber>;
 
     getRoleAdmin(
       role: PromiseOrValue<BytesLike>,
@@ -415,13 +389,6 @@ export interface NodeManagement extends BaseContract {
       account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    initialize(
-      _owner: PromiseOrValue<string>,
-      _members: PromiseOrValue<string>[],
-      _honestThreshold: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     isActive(overrides?: CallOverrides): Promise<boolean>;
 
@@ -494,6 +461,8 @@ export interface NodeManagement extends BaseContract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
+    GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
+
     GUARDIAN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     acceptebleThreshold(overrides?: CallOverrides): Promise<BigNumber>;
@@ -501,8 +470,6 @@ export interface NodeManagement extends BaseContract {
     closeguardian(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
-
-    getOpenedTimestamp(overrides?: CallOverrides): Promise<BigNumber>;
 
     getRoleAdmin(
       role: PromiseOrValue<BytesLike>,
@@ -519,13 +486,6 @@ export interface NodeManagement extends BaseContract {
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    initialize(
-      _owner: PromiseOrValue<string>,
-      _members: PromiseOrValue<string>[],
-      _honestThreshold: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     isActive(overrides?: CallOverrides): Promise<BigNumber>;
@@ -557,6 +517,8 @@ export interface NodeManagement extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    GOVERNANCE_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     GUARDIAN_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     acceptebleThreshold(
@@ -565,10 +527,6 @@ export interface NodeManagement extends BaseContract {
 
     closeguardian(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getOpenedTimestamp(
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getRoleAdmin(
@@ -586,13 +544,6 @@ export interface NodeManagement extends BaseContract {
       role: PromiseOrValue<BytesLike>,
       account: PromiseOrValue<string>,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    initialize(
-      _owner: PromiseOrValue<string>,
-      _members: PromiseOrValue<string>[],
-      _honestThreshold: PromiseOrValue<BigNumberish>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     isActive(overrides?: CallOverrides): Promise<PopulatedTransaction>;

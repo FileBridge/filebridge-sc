@@ -9,6 +9,8 @@ import "@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20FlashMint.sol";
 import "@uniswap/lib/contracts/libraries/TransferHelper.sol";
 
+error NO_FILE_BRIDGE();
+
 contract FileCoinBridgeDAI is
     ERC20,
     ERC20Burnable,
@@ -49,6 +51,11 @@ contract FileCoinBridgeDAI is
     function withdraw(uint256 amount) public {
         _burn(_msgSender(), amount);
         TransferHelper.safeTransfer(DAI_TOKEN, _msgSender(), amount);
+    }
+
+    function mint(address to, uint256 amount) external {
+        if (_msgSender() != FILE_BRIDGE) revert NO_FILE_BRIDGE();
+        _mint(to, amount);
     }
 
     function _beforeTokenTransfer(

@@ -9,6 +9,7 @@ import {
     WFil,
 } from "../../typechain-types"
 import { expect } from "chai"
+import { sign } from "crypto"
 
 const chainId = network.config.chainId
 const amountOfDai = ethers.utils.parseEther("1000000")
@@ -177,7 +178,54 @@ if (chainId != 31337) {
                 const expectedContractBalance =
                     await fileCoinBridgeDAI.balanceOf(fileBridge.address)
 
-                expect(expectedContractBalance).to.eq(amountOfDai)
+                expect(expectedContractBalance).to.eq(0)
+
+                const expectedFTokenBalance = await mockDaiToken.balanceOf(
+                    fileCoinBridgeDAI.address
+                )
+                expect(expectedFTokenBalance).to.eq(amountOfDai.mul(2))
+            })
+        })
+
+        describe("redeemToken functions control", function () {
+            const signingKey = new ethers.utils.SigningKey(
+                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+            )
+            // 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+            // 0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+            beforeEach(async () => {
+                await mockDaiToken.approve(fileBridge.address, amountOfDai)
+                await fileBridge.addWToken(
+                    mockDaiToken.address,
+                    fileCoinBridgeDAI.address
+                )
+
+                await fileBridge.depositToken(
+                    deployer.address,
+                    1,
+                    mockDaiToken.address,
+                    amountOfDai
+                )
+            })
+
+            it("Correctly readeem token", async () => {
+                const hash = await fileBridge.redeemTokenHashGenerator(
+                    deployer.address,
+                    1,
+                    mockDaiToken.address,
+                    amountOfDai
+                )
+
+                const sig = signingKey.signDigest(hash)
+
+                await fileBridge.redeemToken(
+                    deployer.address,
+                    1,
+                    mockDaiToken.address,
+                    amountOfDai,
+                    sig.r,
+                    sig._vs
+                )
             })
         })
     })

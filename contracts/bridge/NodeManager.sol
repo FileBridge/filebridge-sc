@@ -2,14 +2,11 @@
 
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 contract NodeManagement is AccessControlUpgradeable {
-    using SafeERC20 for IERC20;
-
     bytes32 public constant GUARDIAN_ROLE = keccak256("GUARDIAN_ROLE");
+    bytes32 public constant GOVERNANCE_ROLE = keccak256("GOVERNANCE_ROLE");
 
     // Status of the guardian.
     // Active means the guardian is active.
@@ -31,9 +28,6 @@ contract NodeManagement is AccessControlUpgradeable {
     // If the owner seizes member bonds the flag is set to Terminated.
     Status internal status;
 
-    // Flags execution of contract initialization.
-    bool internal isInitialized;
-
     // Notification that the guardian was closed by the owner.
     // Members no longer need to support this guardian.
     event guardianClosed();
@@ -46,11 +40,7 @@ contract NodeManagement is AccessControlUpgradeable {
     /// Releases bonds to the guardian members.
     /// @dev The function can be called only by the owner of the guardian and only
     /// if the guardian has not been already closed.
-    function closeguardian()
-        public
-        onlyRole(DEFAULT_ADMIN_ROLE)
-        onlyWhenActive
-    {
+    function closeguardian() public onlyRole(GOVERNANCE_ROLE) onlyWhenActive {
         markAsClosed();
     }
 
@@ -73,34 +63,6 @@ contract NodeManagement is AccessControlUpgradeable {
     /// @return true if the guardian has been terminated, false otherwise.
     function isTerminated() public view returns (bool) {
         return status == Status.Terminated;
-    }
-
-    /// @notice Initialization function.
-    /// @dev We use clone factory to create new guardian. That is why this contract
-    /// doesn't have a constructor. We provide guardian parameters for each instance
-    /// function after cloning instances from the master contract.
-    /// Initialization must happen in the same transaction in which the clone is
-    /// created.
-    /// @param _owner Address of the guardian owner.
-    /// @param _members Addresses of the guardian members.
-    /// @param _honestThreshold Minimum number of honest guardian members.
-    function initialize(
-        address _owner,
-        address[] memory _members,
-        uint256 _honestThreshold
-    ) public {
-        require(!isInitialized, "Contract already initialized");
-        require(_owner != address(0));
-        for (uint8 i = 0; i < _members.length; i++) {
-            _setupRole(GUARDIAN_ROLE, _members[i]);
-        }
-        acceptebleThreshold = _honestThreshold;
-
-        _setupRole(DEFAULT_ADMIN_ROLE, _owner);
-        __AccessControl_init();
-
-        status = Status.Active;
-        isInitialized = true;
     }
 
     /// @notice Marks the guardian as closed.
