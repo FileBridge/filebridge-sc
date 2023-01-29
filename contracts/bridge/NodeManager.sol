@@ -21,16 +21,17 @@ contract NodeManagement is AccessControlUpgradeable {
         Terminated
     }
 
-    // struct tokenBridgeSig {
+    struct tokenBridgeSig {
+        address to;
+        uint256 chainId;
+        address token;
+        uint256 amount;
+    }
 
-    // };
+    tokenBridgeSig[] private TokenBridgeSigArray;
 
     // Minimum number of guardian members required to produce a signature.
     uint256 public acceptebleThreshold;
-
-    // The timestamp at which guardian has been created and key generation process
-    // started.
-    uint256 internal keyGenerationStartTimestamp;
 
     // The current status of the guardian.
     // If the guardian is Active members monitor it and support requests from the
@@ -50,10 +51,11 @@ contract NodeManagement is AccessControlUpgradeable {
     // Members no longer need to support this guardian.
     event guardianTerminated();
 
-    /// @notice Gets the timestamp the guardian was opened at.
-    /// @return Timestamp the guardian was opened at.
-    function getOpenedTimestamp() external view returns (uint256) {
-        return keyGenerationStartTimestamp;
+    /// @notice return the transaction with given transaction id.
+    function getTransaction(
+        uint256 _txId
+    ) external view returns (tokenBridgeSig memory _tx) {
+        _tx = TokenBridgeSigArray[_txId];
     }
 
     /// @notice Closes guardian when owner decides that they no longer need it.
@@ -115,9 +117,6 @@ contract NodeManagement is AccessControlUpgradeable {
 
         status = Status.Active;
         isInitialized = true;
-
-        /* solium-disable-next-line security/no-block-members*/
-        keyGenerationStartTimestamp = block.timestamp;
     }
 
     /// @notice Marks the guardian as closed.
