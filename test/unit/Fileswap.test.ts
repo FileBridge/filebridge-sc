@@ -61,7 +61,7 @@ if (chainId != 31337) {
             expect(allPairsLength).to.eq(1)
         })
 
-        it("Correctly set fee to a given address", async () => {
+        it("Correctly set feeTo", async () => {
             const feeToAddress = await ethers.provider.getSigner(1).getAddress();
 
             await fileswapV2Factory.setFeeTo(feeToAddress, { from: deployer.address });
@@ -72,12 +72,33 @@ if (chainId != 31337) {
 
         })
 
-        it("Throw an error if called by non feeToSetter address", async () => {
+        it("Throw an error in feeTo if called by non feeToSetter address", async () => {
             const nonFeeSetter = await ethers.provider.getSigner(2).getAddress();
             const feeToAddress = await ethers.provider.getSigner(3).getAddress();
             
             await expect(
                 fileswapV2Factory.setFeeTo(feeToAddress, { from: nonFeeSetter })
+            ).to.be.rejectedWith("Contract with a Signer cannot override from")
+
+        })
+
+        it("Correctly set feeToSetter", async () => {
+            const feeToAddress = await ethers.provider.getSigner(1).getAddress();
+
+            await fileswapV2Factory.setFeeToSetter(feeToAddress, { from: deployer.address });
+
+            const feeToSetter = await fileswapV2Factory.feeToSetter()
+
+            expect(feeToSetter).to.equal(feeToAddress);
+
+        })
+
+        it("Throw an error in feeToSetter if called by non feeToSetter address", async () => {
+            const nonFeeSetter = await ethers.provider.getSigner(2).getAddress();
+            const feeToAddress = await ethers.provider.getSigner(3).getAddress();
+            
+            await expect(
+                fileswapV2Factory.setFeeToSetter(feeToAddress, { from: nonFeeSetter })
             ).to.be.rejectedWith("Contract with a Signer cannot override from")
 
         })
