@@ -9,6 +9,6 @@ yarn hardhat help
 yarn test
 REPORT_GAS=true yarn test
 yarn node
-yarn hardhat run scripts/deploy.ts
-yarn hardhat deploy
+yarn deploy
+yarn cli
 ```
