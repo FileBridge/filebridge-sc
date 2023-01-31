@@ -30,7 +30,10 @@ const deployFileswapFactory: DeployFunction = async function (
         "FileswapV2Factory",
         deployer
     )) as FileswapV2Factory
-    await fileswapV2FactoryContract.setFeeTo(deployer)
+    gasData = await ethers.provider.getFeeData()
+    await fileswapV2FactoryContract.setFeeTo(deployer, {
+        maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
+    })
 
     log(`FileswapFactory deployed at ${fileswapV2Factory.address}`)
     log("__________________________________________________")

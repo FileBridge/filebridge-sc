@@ -26,12 +26,15 @@ const deployFileBridge: DeployFunction = async function (
         waitConfirmations: chainId === 31337 || chainId === 3141 ? 1 : 5,
     })
 
+    gasData = await ethers.provider.getFeeData()
     const fileBridgeContract = (await ethers.getContract(
         "FileBridge",
         deployer
     )) as FileBridge
 
-    await fileBridgeContract.initialize(deployer, [deployer], 1)
+    await fileBridgeContract.initialize(deployer, [deployer], 1, {
+        maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
+    })
 
     log(`FileBridge deployed at ${fileBridge.address}`)
     log("__________________________________________________")

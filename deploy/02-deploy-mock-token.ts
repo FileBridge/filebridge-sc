@@ -17,8 +17,8 @@ const deployToken: DeployFunction = async function (
         const { deployer } = await getNamedAccounts()
         log(`The deployer address is: ${deployer}`)
 
-        const name = "DAI TOKEN",
-            symbol = "DAI"
+        const name: string = "DAI TOKEN",
+            symbol: string = "DAI"
 
         let args: any = [name, symbol]
         log(`Deploying ${name} and waiting for confirmations...`)

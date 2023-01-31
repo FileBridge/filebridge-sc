@@ -18,7 +18,7 @@ const deployFileToken: DeployFunction = async function (
         fileBridge = await ethers.getContract("FileBridge"),
         name = "FILE DAI TOKEN",
         symbol = "FDAI"
-    let args: any = [mockToken.address, fileBridge.address, name, symbol] // the second address to be fixed fileBridge address
+    let args: any = [mockToken.address, fileBridge.address, name, symbol]
     log(`Deploying ${name} and waiting for confirmations...`)
     let gasData = await ethers.provider.getFeeData()
     const fileToken = await deploy("FToken", {

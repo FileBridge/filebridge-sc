@@ -20,7 +20,7 @@ contract FToken is
     ERC20FlashMint
 {
     address immutable FILE_BRIDGE;
-    address private immutable DAI_TOKEN;
+    address public immutable TOKEN;
 
     constructor(
         address _TOKEN_ADDRESS,
@@ -28,7 +28,7 @@ contract FToken is
         string memory _name,
         string memory _symbol
     ) ERC20(_name, _symbol) ERC20Permit(_name) {
-        DAI_TOKEN = _TOKEN_ADDRESS;
+        TOKEN = _TOKEN_ADDRESS;
         FILE_BRIDGE = _FILE_BRIDGE;
     }
 
@@ -42,7 +42,7 @@ contract FToken is
 
     function deposit(uint256 amount) public {
         TransferHelper.safeTransferFrom(
-            DAI_TOKEN,
+            TOKEN,
             _msgSender(),
             address(this),
             amount
@@ -52,7 +52,7 @@ contract FToken is
 
     function withdraw(uint256 amount) public {
         _burn(_msgSender(), amount);
-        TransferHelper.safeTransfer(DAI_TOKEN, _msgSender(), amount);
+        TransferHelper.safeTransfer(TOKEN, _msgSender(), amount);
     }
 
     function mint(address to, uint256 amount) external {
@@ -69,6 +69,6 @@ contract FToken is
     }
 
     function getDaiAddress() external view returns (address daiAddress) {
-        return DAI_TOKEN;
+        return TOKEN;
     }
 }

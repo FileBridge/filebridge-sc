@@ -39,6 +39,7 @@
     "test:staging": "yarn hardhat test --network goerli",
     "lint": "yarn solhint 'contracts/*.sol'",
     "lint:fix": "yarn solhint 'contracts/*.sol' --fix",
-    "coverage": "yarn hardhat coverage --network hardhat"
+    "coverage": "yarn hardhat coverage --network hardhat",
+    "cli": "yarn hardhat run ./scripts/file_bridge_cli.ts"
   }
 }

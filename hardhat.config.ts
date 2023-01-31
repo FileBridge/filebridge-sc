@@ -69,12 +69,12 @@ const config: HardhatUserConfig = {
     },
     defaultNetwork: "hardhat",
     networks: {
-        hardhat: {
-            // forking: {
-            //     url: GOERLI_RPC_URL,
-            //     // blockNumber: 3627190,
-            // },
-        },
+        // hardhat: {
+        //     forking: {
+        //         url: GOERLI_RPC_URL,
+        //         // blockNumber: 3627190,
+        //     },
+        // },
         goerli: {
             url: GOERLI_RPC_URL,
             accounts: [wallet1, wallet2, wallet3],
