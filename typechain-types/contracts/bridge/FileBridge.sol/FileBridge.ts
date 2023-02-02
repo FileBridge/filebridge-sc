@@ -9,6 +9,7 @@ import type {
   CallOverrides,
   ContractTransaction,
   Overrides,
+  PayableOverrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -38,6 +39,8 @@ export interface FileBridgeInterface extends utils.Interface {
     "bridgeVersion()": FunctionFragment;
     "changeWToken(address,address)": FunctionFragment;
     "closeguardian()": FunctionFragment;
+    "depositFToken(address,uint256,address,uint256)": FunctionFragment;
+    "depositNativeToken(address,uint256)": FunctionFragment;
     "depositToken(address,uint256,address,uint256)": FunctionFragment;
     "getFeeBalance(address)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -47,10 +50,15 @@ export interface FileBridgeInterface extends utils.Interface {
     "isActive()": FunctionFragment;
     "isClosed()": FunctionFragment;
     "isTerminated()": FunctionFragment;
+    "nonces(address)": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
-    "redeemToken(address,uint256,address,uint256,bytes32,bytes32)": FunctionFragment;
-    "redeemTokenHashGenerator(address,uint256,address,uint256)": FunctionFragment;
+    "redeemFToken(address,uint256,address,uint256,address,bytes32,bytes32)": FunctionFragment;
+    "redeemFTokenHashGenerator(address,uint256,address,uint256,uint256)": FunctionFragment;
+    "redeemNativeToken(address,uint256,uint256,address,bytes32,bytes32)": FunctionFragment;
+    "redeemNativeTokenHashGenerator(address,uint256,uint256,uint256)": FunctionFragment;
+    "redeemToken(address,uint256,address,uint256,address,bytes32,bytes32)": FunctionFragment;
+    "redeemTokenHashGenerator(address,uint256,address,uint256,uint256)": FunctionFragment;
     "removeWToken(address)": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
@@ -73,6 +81,8 @@ export interface FileBridgeInterface extends utils.Interface {
       | "bridgeVersion"
       | "changeWToken"
       | "closeguardian"
+      | "depositFToken"
+      | "depositNativeToken"
       | "depositToken"
       | "getFeeBalance"
       | "getRoleAdmin"
@@ -82,8 +92,13 @@ export interface FileBridgeInterface extends utils.Interface {
       | "isActive"
       | "isClosed"
       | "isTerminated"
+      | "nonces"
       | "pause"
       | "paused"
+      | "redeemFToken"
+      | "redeemFTokenHashGenerator"
+      | "redeemNativeToken"
+      | "redeemNativeTokenHashGenerator"
       | "redeemToken"
       | "redeemTokenHashGenerator"
       | "removeWToken"
@@ -134,6 +149,19 @@ export interface FileBridgeInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "depositFToken",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "depositNativeToken",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "depositToken",
     values: [
       PromiseOrValue<string>,
@@ -172,8 +200,54 @@ export interface FileBridgeInterface extends utils.Interface {
     functionFragment: "isTerminated",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "nonces",
+    values: [PromiseOrValue<string>]
+  ): string;
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "redeemFToken",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "redeemFTokenHashGenerator",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "redeemNativeToken",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BytesLike>
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "redeemNativeTokenHashGenerator",
+    values: [
+      PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
   encodeFunctionData(
     functionFragment: "redeemToken",
     values: [
@@ -181,6 +255,7 @@ export interface FileBridgeInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
+      PromiseOrValue<string>,
       PromiseOrValue<BytesLike>,
       PromiseOrValue<BytesLike>
     ]
@@ -191,6 +266,7 @@ export interface FileBridgeInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<string>,
+      PromiseOrValue<BigNumberish>,
       PromiseOrValue<BigNumberish>
     ]
   ): string;
@@ -262,6 +338,14 @@ export interface FileBridgeInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "depositFToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "depositNativeToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "depositToken",
     data: BytesLike
   ): Result;
@@ -282,8 +366,25 @@ export interface FileBridgeInterface extends utils.Interface {
     functionFragment: "isTerminated",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "nonces", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "redeemFToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "redeemFTokenHashGenerator",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "redeemNativeToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "redeemNativeTokenHashGenerator",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "redeemToken",
     data: BytesLike
@@ -324,35 +425,69 @@ export interface FileBridgeInterface extends utils.Interface {
   ): Result;
 
   events: {
+    "FTokenDeposited(address,uint256,address,uint256)": EventFragment;
+    "FTokenRedeemed(address,uint256,address,uint256)": EventFragment;
     "Initialized(uint8)": EventFragment;
+    "NativeTokenDeposited(address,uint256,uint256)": EventFragment;
+    "NativeTokenRedeemed(address,uint256,uint256)": EventFragment;
     "Paused(address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
     "TokenAddedToList(address,address)": EventFragment;
     "TokenChangedInList(address,address,address)": EventFragment;
-    "TokenDeposit(address,uint256,address,uint256)": EventFragment;
-    "TokenRedeem(address,uint256,address,uint256)": EventFragment;
+    "TokenDeposited(address,uint256,address,uint256)": EventFragment;
+    "TokenRedeemed(address,uint256,address,uint256)": EventFragment;
     "TokenRemovedFromList(address)": EventFragment;
     "Unpaused(address)": EventFragment;
     "guardianClosed()": EventFragment;
     "guardianTerminated()": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "FTokenDeposited"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "FTokenRedeemed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NativeTokenDeposited"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "NativeTokenRedeemed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenAddedToList"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenChangedInList"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenDeposit"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "TokenRedeem"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TokenDeposited"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TokenRedeemed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenRemovedFromList"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "guardianClosed"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "guardianTerminated"): EventFragment;
 }
+
+export interface FTokenDepositedEventObject {
+  to: string;
+  chainId: BigNumber;
+  token: string;
+  amount: BigNumber;
+}
+export type FTokenDepositedEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber],
+  FTokenDepositedEventObject
+>;
+
+export type FTokenDepositedEventFilter = TypedEventFilter<FTokenDepositedEvent>;
+
+export interface FTokenRedeemedEventObject {
+  to: string;
+  chainId: BigNumber;
+  token: string;
+  amount: BigNumber;
+}
+export type FTokenRedeemedEvent = TypedEvent<
+  [string, BigNumber, string, BigNumber],
+  FTokenRedeemedEventObject
+>;
+
+export type FTokenRedeemedEventFilter = TypedEventFilter<FTokenRedeemedEvent>;
 
 export interface InitializedEventObject {
   version: number;
@@ -360,6 +495,32 @@ export interface InitializedEventObject {
 export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
 
 export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
+
+export interface NativeTokenDepositedEventObject {
+  to: string;
+  chainId: BigNumber;
+  amount: BigNumber;
+}
+export type NativeTokenDepositedEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  NativeTokenDepositedEventObject
+>;
+
+export type NativeTokenDepositedEventFilter =
+  TypedEventFilter<NativeTokenDepositedEvent>;
+
+export interface NativeTokenRedeemedEventObject {
+  to: string;
+  chainId: BigNumber;
+  amount: BigNumber;
+}
+export type NativeTokenRedeemedEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  NativeTokenRedeemedEventObject
+>;
+
+export type NativeTokenRedeemedEventFilter =
+  TypedEventFilter<NativeTokenRedeemedEvent>;
 
 export interface PausedEventObject {
   account: string;
@@ -430,31 +591,31 @@ export type TokenChangedInListEvent = TypedEvent<
 export type TokenChangedInListEventFilter =
   TypedEventFilter<TokenChangedInListEvent>;
 
-export interface TokenDepositEventObject {
+export interface TokenDepositedEventObject {
   to: string;
   chainId: BigNumber;
   token: string;
   amount: BigNumber;
 }
-export type TokenDepositEvent = TypedEvent<
+export type TokenDepositedEvent = TypedEvent<
   [string, BigNumber, string, BigNumber],
-  TokenDepositEventObject
+  TokenDepositedEventObject
 >;
 
-export type TokenDepositEventFilter = TypedEventFilter<TokenDepositEvent>;
+export type TokenDepositedEventFilter = TypedEventFilter<TokenDepositedEvent>;
 
-export interface TokenRedeemEventObject {
+export interface TokenRedeemedEventObject {
   to: string;
   chainId: BigNumber;
   token: string;
   amount: BigNumber;
 }
-export type TokenRedeemEvent = TypedEvent<
+export type TokenRedeemedEvent = TypedEvent<
   [string, BigNumber, string, BigNumber],
-  TokenRedeemEventObject
+  TokenRedeemedEventObject
 >;
 
-export type TokenRedeemEventFilter = TypedEventFilter<TokenRedeemEvent>;
+export type TokenRedeemedEventFilter = TypedEventFilter<TokenRedeemedEvent>;
 
 export interface TokenRemovedFromListEventObject {
   _token: string;
@@ -543,6 +704,20 @@ export interface FileBridge extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    depositFToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    depositNativeToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     depositToken(
       to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
@@ -586,17 +761,61 @@ export interface FileBridge extends BaseContract {
 
     isTerminated(overrides?: CallOverrides): Promise<[boolean]>;
 
+    nonces(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     pause(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
+    redeemFToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    redeemFTokenHashGenerator(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string] & { hash: string }>;
+
+    redeemNativeToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    redeemNativeTokenHashGenerator(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[string] & { hash: string }>;
+
     redeemToken(
       to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
       r: PromiseOrValue<BytesLike>,
       vs: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -607,6 +826,7 @@ export interface FileBridge extends BaseContract {
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[string] & { hash: string }>;
 
@@ -683,6 +903,20 @@ export interface FileBridge extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  depositFToken(
+    to: PromiseOrValue<string>,
+    chainId: PromiseOrValue<BigNumberish>,
+    fToken: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  depositNativeToken(
+    to: PromiseOrValue<string>,
+    chainId: PromiseOrValue<BigNumberish>,
+    overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   depositToken(
     to: PromiseOrValue<string>,
     chainId: PromiseOrValue<BigNumberish>,
@@ -726,17 +960,61 @@ export interface FileBridge extends BaseContract {
 
   isTerminated(overrides?: CallOverrides): Promise<boolean>;
 
+  nonces(
+    owner: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   pause(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
 
+  redeemFToken(
+    to: PromiseOrValue<string>,
+    chainId: PromiseOrValue<BigNumberish>,
+    fToken: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
+    _signer: PromiseOrValue<string>,
+    r: PromiseOrValue<BytesLike>,
+    vs: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  redeemFTokenHashGenerator(
+    to: PromiseOrValue<string>,
+    chainId: PromiseOrValue<BigNumberish>,
+    fToken: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
+    nonce: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  redeemNativeToken(
+    to: PromiseOrValue<string>,
+    chainId: PromiseOrValue<BigNumberish>,
+    amount: PromiseOrValue<BigNumberish>,
+    _signer: PromiseOrValue<string>,
+    r: PromiseOrValue<BytesLike>,
+    vs: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  redeemNativeTokenHashGenerator(
+    to: PromiseOrValue<string>,
+    chainId: PromiseOrValue<BigNumberish>,
+    amount: PromiseOrValue<BigNumberish>,
+    nonce: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
   redeemToken(
     to: PromiseOrValue<string>,
     chainId: PromiseOrValue<BigNumberish>,
     token: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
+    _signer: PromiseOrValue<string>,
     r: PromiseOrValue<BytesLike>,
     vs: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -747,6 +1025,7 @@ export interface FileBridge extends BaseContract {
     chainId: PromiseOrValue<BigNumberish>,
     token: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
+    nonce: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
 
@@ -821,6 +1100,20 @@ export interface FileBridge extends BaseContract {
 
     closeguardian(overrides?: CallOverrides): Promise<void>;
 
+    depositFToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    depositNativeToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     depositToken(
       to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
@@ -864,15 +1157,59 @@ export interface FileBridge extends BaseContract {
 
     isTerminated(overrides?: CallOverrides): Promise<boolean>;
 
+    nonces(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     pause(overrides?: CallOverrides): Promise<void>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
+
+    redeemFToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    redeemFTokenHashGenerator(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    redeemNativeToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    redeemNativeTokenHashGenerator(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     redeemToken(
       to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
       r: PromiseOrValue<BytesLike>,
       vs: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
@@ -883,6 +1220,7 @@ export interface FileBridge extends BaseContract {
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
 
@@ -930,8 +1268,56 @@ export interface FileBridge extends BaseContract {
   };
 
   filters: {
+    "FTokenDeposited(address,uint256,address,uint256)"(
+      to?: PromiseOrValue<string> | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): FTokenDepositedEventFilter;
+    FTokenDeposited(
+      to?: PromiseOrValue<string> | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): FTokenDepositedEventFilter;
+
+    "FTokenRedeemed(address,uint256,address,uint256)"(
+      to?: PromiseOrValue<string> | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): FTokenRedeemedEventFilter;
+    FTokenRedeemed(
+      to?: PromiseOrValue<string> | null,
+      chainId?: null,
+      token?: null,
+      amount?: null
+    ): FTokenRedeemedEventFilter;
+
     "Initialized(uint8)"(version?: null): InitializedEventFilter;
     Initialized(version?: null): InitializedEventFilter;
+
+    "NativeTokenDeposited(address,uint256,uint256)"(
+      to?: PromiseOrValue<string> | null,
+      chainId?: null,
+      amount?: null
+    ): NativeTokenDepositedEventFilter;
+    NativeTokenDeposited(
+      to?: PromiseOrValue<string> | null,
+      chainId?: null,
+      amount?: null
+    ): NativeTokenDepositedEventFilter;
+
+    "NativeTokenRedeemed(address,uint256,uint256)"(
+      to?: PromiseOrValue<string> | null,
+      chainId?: null,
+      amount?: null
+    ): NativeTokenRedeemedEventFilter;
+    NativeTokenRedeemed(
+      to?: PromiseOrValue<string> | null,
+      chainId?: null,
+      amount?: null
+    ): NativeTokenRedeemedEventFilter;
 
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
@@ -989,31 +1375,31 @@ export interface FileBridge extends BaseContract {
       _WTokenNew?: null
     ): TokenChangedInListEventFilter;
 
-    "TokenDeposit(address,uint256,address,uint256)"(
+    "TokenDeposited(address,uint256,address,uint256)"(
       to?: PromiseOrValue<string> | null,
       chainId?: null,
       token?: null,
       amount?: null
-    ): TokenDepositEventFilter;
-    TokenDeposit(
+    ): TokenDepositedEventFilter;
+    TokenDeposited(
       to?: PromiseOrValue<string> | null,
       chainId?: null,
       token?: null,
       amount?: null
-    ): TokenDepositEventFilter;
+    ): TokenDepositedEventFilter;
 
-    "TokenRedeem(address,uint256,address,uint256)"(
+    "TokenRedeemed(address,uint256,address,uint256)"(
       to?: PromiseOrValue<string> | null,
       chainId?: null,
       token?: null,
       amount?: null
-    ): TokenRedeemEventFilter;
-    TokenRedeem(
+    ): TokenRedeemedEventFilter;
+    TokenRedeemed(
       to?: PromiseOrValue<string> | null,
       chainId?: null,
       token?: null,
       amount?: null
-    ): TokenRedeemEventFilter;
+    ): TokenRedeemedEventFilter;
 
     "TokenRemovedFromList(address)"(
       _token?: null
@@ -1059,6 +1445,20 @@ export interface FileBridge extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    depositFToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    depositNativeToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     depositToken(
       to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
@@ -1102,17 +1502,61 @@ export interface FileBridge extends BaseContract {
 
     isTerminated(overrides?: CallOverrides): Promise<BigNumber>;
 
+    nonces(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     pause(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
+    redeemFToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    redeemFTokenHashGenerator(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    redeemNativeToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    redeemNativeTokenHashGenerator(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     redeemToken(
       to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
       r: PromiseOrValue<BytesLike>,
       vs: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1123,6 +1567,7 @@ export interface FileBridge extends BaseContract {
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1204,6 +1649,20 @@ export interface FileBridge extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    depositFToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    depositNativeToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      overrides?: PayableOverrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     depositToken(
       to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
@@ -1247,17 +1706,61 @@ export interface FileBridge extends BaseContract {
 
     isTerminated(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    nonces(
+      owner: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     pause(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    redeemFToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    redeemFTokenHashGenerator(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      fToken: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    redeemNativeToken(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
+      r: PromiseOrValue<BytesLike>,
+      vs: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    redeemNativeTokenHashGenerator(
+      to: PromiseOrValue<string>,
+      chainId: PromiseOrValue<BigNumberish>,
+      amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     redeemToken(
       to: PromiseOrValue<string>,
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      _signer: PromiseOrValue<string>,
       r: PromiseOrValue<BytesLike>,
       vs: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -1268,6 +1771,7 @@ export interface FileBridge extends BaseContract {
       chainId: PromiseOrValue<BigNumberish>,
       token: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      nonce: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

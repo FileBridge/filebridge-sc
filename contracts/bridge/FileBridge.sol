@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./NodeManager.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
 error NOT_SUPPORTED_TOKEN();
 error TOKEN_EXIST();
@@ -18,6 +19,10 @@ error TOKEN_DOESNT_EXIST();
 // NODE MAGAER ERRORS
 error OWNER_ADDRESS_ZERO();
 error WRONGE_SIG();
+error WRONG_CHAIN();
+
+// transfer eth error
+error TRANSFER_FAILED();
 
 contract FileBridge is
     Initializable,
@@ -28,15 +33,27 @@ contract FileBridge is
 {
     using SafeERC20 for IERC20;
     using SafeERC20 for IERC20Mintable;
+    using Counters for Counters.Counter;
 
     mapping(address => uint256) private fees;
     mapping(address => address) public tokenToWTokenMap;
+    mapping(address => Counters.Counter) private _nonces;
 
     bytes32 private constant _REDEEM_TOKEN_TYPEHASH =
         keccak256(
-            "redeemToken(address to,uint256 chainId,address token,uint256 amount)"
+            "redeemToken(address to,uint256 chainId,address token,uint256 amount,uint256 nonce)"
         );
+    bytes32 private constant _REDEEM_F_TOKEN_TYPEHASH =
+        keccak256(
+            "redeemFToken(address to,uint256 chainId,address token,uint256 amount,uint256 nonce)"
+        );
+    bytes32 private constant _REDEEM_NATIVE_TOKEN_TYPEHASH =
+        keccak256(
+            "redeemNativeToken(address to,uint256 chainId,uint256 amount,uint256 nonce)"
+        );
+
     uint256 public constant bridgeVersion = 1;
+    // address CHAINLINK_PRICE_FEED;
     uint256 public startBlockNumber;
     address payable public WFIL_ADDRESS;
 
@@ -84,16 +101,43 @@ contract FileBridge is
         address _WTokenNew
     );
 
-    event TokenDeposit(
+    event TokenDeposited(
         address indexed to,
         uint256 chainId,
         IERC20 token,
         uint256 amount
     );
-    event TokenRedeem(
+
+    event TokenRedeemed(
         address indexed to,
         uint256 chainId,
         IERC20 token,
+        uint256 amount
+    );
+
+    event FTokenDeposited(
+        address indexed to,
+        uint256 chainId,
+        IFToken token,
+        uint256 amount
+    );
+
+    event FTokenRedeemed(
+        address indexed to,
+        uint256 chainId,
+        IFToken token,
+        uint256 amount
+    );
+
+    event NativeTokenDeposited(
+        address indexed to,
+        uint256 chainId,
+        uint256 amount
+    );
+
+    event NativeTokenRedeemed(
+        address indexed to,
+        uint256 chainId,
         uint256 amount
     );
 
@@ -108,7 +152,8 @@ contract FileBridge is
         address to,
         uint256 chainId,
         IERC20 token,
-        uint256 amount
+        uint256 amount,
+        uint256 nonce
     ) external view returns (bytes32 hash) {
         bytes32 structHash = keccak256(
             abi.encode(
@@ -116,11 +161,59 @@ contract FileBridge is
                 to,
                 chainId,
                 address(token),
-                amount
+                amount,
+                nonce
             )
         );
 
         hash = _hashTypedDataV4(structHash);
+    }
+
+    function redeemFTokenHashGenerator(
+        address to,
+        uint256 chainId,
+        IERC20 fToken,
+        uint256 amount,
+        uint256 nonce
+    ) external view returns (bytes32 hash) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _REDEEM_F_TOKEN_TYPEHASH,
+                to,
+                chainId,
+                address(fToken),
+                amount,
+                nonce
+            )
+        );
+
+        hash = _hashTypedDataV4(structHash);
+    }
+
+    function redeemNativeTokenHashGenerator(
+        address to,
+        uint256 chainId,
+        uint256 amount,
+        uint256 nonce
+    ) external view returns (bytes32 hash) {
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _REDEEM_NATIVE_TOKEN_TYPEHASH,
+                to,
+                chainId,
+                amount,
+                nonce
+            )
+        );
+
+        hash = _hashTypedDataV4(structHash);
+    }
+
+    /**
+     * @dev See {file bridge nonces}.
+     */
+    function nonces(address owner) public view returns (uint256) {
+        return _nonces[owner].current();
     }
 
     // ADD WRAPPED TOKEN FUNCTION ***/
@@ -193,6 +286,19 @@ contract FileBridge is
         _unpause();
     }
 
+    // Nonce functions ***/
+    /**
+     * @dev "Consume a nonce": return the current value and increment.
+     *
+     */
+    function _useNonce(
+        address owner
+    ) internal virtual returns (uint256 current) {
+        Counters.Counter storage nonce = _nonces[owner];
+        current = nonce.current();
+        nonce.increment();
+    }
+
     /**
      * @notice Relays to nodes to transfers an ERC20 token cross-chain
      * @param to address on other chain to bridge assets to
@@ -209,7 +315,7 @@ contract FileBridge is
         IFToken fToken = IFToken(tokenToWTokenMap[address(token)]);
         if (address(fToken) == address(0)) revert NOT_SUPPORTED_TOKEN();
 
-        emit TokenDeposit(to, chainId, token, amount);
+        emit TokenDeposited(to, chainId, token, amount);
         token.safeTransferFrom(msg.sender, address(this), amount);
         token.approve(address(fToken), amount);
         fToken.deposit(amount);
@@ -228,16 +334,21 @@ contract FileBridge is
         uint256 chainId,
         IERC20 token,
         uint256 amount,
+        address _signer,
         bytes32 r,
         bytes32 vs
     ) external nonReentrant whenNotPaused {
+        uint256 blockChainId = block.chainid;
+        if (chainId != blockChainId) revert WRONG_CHAIN();
+
         bytes32 structHash = keccak256(
             abi.encode(
                 _REDEEM_TOKEN_TYPEHASH,
                 to,
                 chainId,
                 address(token),
-                amount
+                amount,
+                _useNonce(_signer)
             )
         );
 
@@ -245,7 +356,8 @@ contract FileBridge is
 
         address signer = ECDSA.recover(hash, r, vs);
 
-        if (!hasRole(GOVERNANCE_ROLE, signer)) revert WRONGE_SIG();
+        if (!hasRole(GUARDIAN_ROLE, signer)) revert WRONGE_SIG();
+        if (signer != _signer) revert WRONGE_SIG();
 
         _redeemToken(to, chainId, token, amount);
     }
@@ -257,11 +369,140 @@ contract FileBridge is
         uint256 amount
     ) private {
         IFToken fToken = IFToken(tokenToWTokenMap[address(token)]);
-        emit TokenRedeem(to, chainId, token, amount);
+        emit TokenRedeemed(to, chainId, token, amount);
 
         fToken.mint(address(this), amount);
         fToken.withdraw(amount);
         token.transfer(to, amount);
+    }
+
+    /**
+     * @notice Relays to nodes to transfers an ERC20 token cross-chain
+     * @param to address on other chain to bridge assets to
+     * @param chainId which chain to bridge assets onto
+     * @param fToken The wrapped file token to deposit into the bridge
+     * @param amount Amount in native token decimals to transfer cross-chain pre-fees
+     **/
+    function depositFToken(
+        address to,
+        uint256 chainId,
+        IFToken fToken,
+        uint256 amount
+    ) external nonReentrant whenNotPaused {
+        emit FTokenDeposited(to, chainId, fToken, amount);
+        fToken.burn(amount);
+    }
+
+    /**
+     * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain
+     * @param to address on other chain to redeem underlying assets to
+     * @param chainId which underlying chain to bridge assets onto
+     * @param fToken The wrapped file token to deposit into the bridge
+     * @param amount Amount in native token decimals to transfer cross-chain pre-fees
+     **/
+    function redeemFToken(
+        address to,
+        uint256 chainId,
+        IFToken fToken,
+        uint256 amount,
+        address _signer,
+        bytes32 r,
+        bytes32 vs
+    ) external nonReentrant whenNotPaused {
+        uint256 blockChainId = block.chainid;
+        if (chainId != blockChainId) revert WRONG_CHAIN();
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _REDEEM_F_TOKEN_TYPEHASH,
+                to,
+                chainId,
+                address(fToken),
+                amount,
+                _useNonce(_signer)
+            )
+        );
+
+        bytes32 hash = _hashTypedDataV4(structHash);
+
+        address signer = ECDSA.recover(hash, r, vs);
+
+        if (!hasRole(GUARDIAN_ROLE, signer)) revert WRONGE_SIG();
+        if (signer != _signer) revert WRONGE_SIG();
+
+        _redeemFToken(to, chainId, fToken, amount);
+    }
+
+    function _redeemFToken(
+        address to,
+        uint256 chainId,
+        IFToken fToken,
+        uint256 amount
+    ) private {
+        emit FTokenRedeemed(to, chainId, fToken, amount);
+
+        fToken.mint(to, amount);
+    }
+
+    /**
+     * @notice Relays to nodes to transfers an ERC20 token cross-chain
+     * @param to address on other chain to bridge assets to
+     * @param chainId which chain to bridge assets onto
+     **/
+    function depositNativeToken(
+        address to,
+        uint256 chainId
+    ) external payable nonReentrant whenNotPaused {
+        emit NativeTokenDeposited(to, chainId, msg.value);
+        IWETH9(WFIL_ADDRESS).deposit();
+    }
+
+    /**
+     * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain
+     * @param to address on other chain to redeem underlying assets to
+     * @param chainId which underlying chain to bridge assets onto
+     * @param amount Amount in native token decimals to transfer cross-chain pre-fees
+     **/
+    function redeemNativeToken(
+        address to,
+        uint256 chainId,
+        uint256 amount,
+        address _signer,
+        bytes32 r,
+        bytes32 vs
+    ) external nonReentrant whenNotPaused {
+        uint256 blockChainId = block.chainid;
+        if (chainId != blockChainId) revert WRONG_CHAIN();
+
+        bytes32 structHash = keccak256(
+            abi.encode(
+                _REDEEM_NATIVE_TOKEN_TYPEHASH,
+                to,
+                chainId,
+                amount,
+                _useNonce(_signer)
+            )
+        );
+
+        bytes32 hash = _hashTypedDataV4(structHash);
+
+        address signer = ECDSA.recover(hash, r, vs);
+
+        if (!hasRole(GUARDIAN_ROLE, signer)) revert WRONGE_SIG();
+        if (signer != _signer) revert WRONGE_SIG();
+
+        _redeemNativeToken(to, chainId, amount);
+    }
+
+    function _redeemNativeToken(
+        address to,
+        uint256 chainId,
+        uint256 amount
+    ) private {
+        emit NativeTokenRedeemed(to, chainId, amount);
+        (bool success, ) = payable(to).call{value: msg.value}("");
+
+        if (!success) revert TRANSFER_FAILED();
     }
 }
 

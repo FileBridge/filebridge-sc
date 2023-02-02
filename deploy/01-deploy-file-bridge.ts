@@ -32,7 +32,7 @@ const deployFileBridge: DeployFunction = async function (
         deployer
     )) as FileBridge
 
-    await fileBridgeContract.initialize(deployer, [deployer], 1, {
+    await fileBridgeContract.initialize(deployer, [guardian], 1, {
         maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
     })
 

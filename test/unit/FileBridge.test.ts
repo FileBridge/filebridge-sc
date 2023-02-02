@@ -175,7 +175,7 @@ if (chainId != 31337) {
 
         describe("redeemToken functions control", function () {
             const signingKey = new ethers.utils.SigningKey(
-                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+                "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
             )
 
             beforeEach(async () => {
@@ -191,20 +191,23 @@ if (chainId != 31337) {
             })
 
             it("Correctly readeem token", async () => {
+                const nonce = await fileBridge.nonces(deployer.address)
                 const hash = await fileBridge.redeemTokenHashGenerator(
                     deployer.address,
-                    1,
+                    31337,
                     mockToken.address,
-                    amountOfDai
+                    amountOfDai,
+                    nonce
                 )
 
                 const sig = signingKey.signDigest(hash)
 
                 await fileBridge.redeemToken(
                     deployer.address,
-                    1,
+                    31337,
                     mockToken.address,
                     amountOfDai,
+                    guardian.address,
                     sig.r,
                     sig._vs
                 )
