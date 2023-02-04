@@ -390,7 +390,7 @@ contract FileBridge is
         uint256 amount
     ) external nonReentrant whenNotPaused {
         emit FTokenDeposited(to, chainId, fToken, amount);
-        fToken.burn(amount);
+        fToken.burnFrom(msg.sender, amount);
     }
 
     /**
@@ -444,66 +444,67 @@ contract FileBridge is
         fToken.mint(to, amount);
     }
 
-    /**
-     * @notice Relays to nodes to transfers an ERC20 token cross-chain
-     * @param to address on other chain to bridge assets to
-     * @param chainId which chain to bridge assets onto
-     **/
-    function depositNativeToken(
-        address to,
-        uint256 chainId
-    ) external payable nonReentrant whenNotPaused {
-        emit NativeTokenDeposited(to, chainId, msg.value);
-        IWETH9(WFIL_ADDRESS).deposit();
-    }
+    // yet there is no support of chainlink. will be added later
+    // /**
+    //  * @notice Relays to nodes to transfers an ERC20 token cross-chain
+    //  * @param to address on other chain to bridge assets to
+    //  * @param chainId which chain to bridge assets onto
+    //  **/
+    // function depositNativeToken(
+    //     address to,
+    //     uint256 chainId
+    // ) external payable nonReentrant whenNotPaused {
+    //     emit NativeTokenDeposited(to, chainId, msg.value);
+    //     IWETH9(WFIL_ADDRESS).deposit();
+    // }
 
-    /**
-     * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain
-     * @param to address on other chain to redeem underlying assets to
-     * @param chainId which underlying chain to bridge assets onto
-     * @param amount Amount in native token decimals to transfer cross-chain pre-fees
-     **/
-    function redeemNativeToken(
-        address to,
-        uint256 chainId,
-        uint256 amount,
-        address _signer,
-        bytes32 r,
-        bytes32 vs
-    ) external nonReentrant whenNotPaused {
-        uint256 blockChainId = block.chainid;
-        if (chainId != blockChainId) revert WRONG_CHAIN();
+    // /**
+    //  * @notice Relays to nodes that (typically) a wrapped synAsset ERC20 token has been burned and the underlying needs to be redeeemed on the native chain
+    //  * @param to address on other chain to redeem underlying assets to
+    //  * @param chainId which underlying chain to bridge assets onto
+    //  * @param amount Amount in native token decimals to transfer cross-chain pre-fees
+    //  **/
+    // function redeemNativeToken(
+    //     address to,
+    //     uint256 chainId,
+    //     uint256 amount,
+    //     address _signer,
+    //     bytes32 r,
+    //     bytes32 vs
+    // ) external nonReentrant whenNotPaused {
+    //     uint256 blockChainId = block.chainid;
+    //     if (chainId != blockChainId) revert WRONG_CHAIN();
 
-        bytes32 structHash = keccak256(
-            abi.encode(
-                _REDEEM_NATIVE_TOKEN_TYPEHASH,
-                to,
-                chainId,
-                amount,
-                _useNonce(_signer)
-            )
-        );
+    //     bytes32 structHash = keccak256(
+    //         abi.encode(
+    //             _REDEEM_NATIVE_TOKEN_TYPEHASH,
+    //             to,
+    //             chainId,
+    //             amount,
+    //             _useNonce(_signer)
+    //         )
+    //     );
 
-        bytes32 hash = _hashTypedDataV4(structHash);
+    //     bytes32 hash = _hashTypedDataV4(structHash);
 
-        address signer = ECDSA.recover(hash, r, vs);
+    //     address signer = ECDSA.recover(hash, r, vs);
 
-        if (!hasRole(GUARDIAN_ROLE, signer)) revert WRONGE_SIG();
-        if (signer != _signer) revert WRONGE_SIG();
+    //     if (!hasRole(GUARDIAN_ROLE, signer)) revert WRONGE_SIG();
+    //     if (signer != _signer) revert WRONGE_SIG();
 
-        _redeemNativeToken(to, chainId, amount);
-    }
+    //     _redeemNativeToken(to, chainId, amount);
+    // }
 
-    function _redeemNativeToken(
-        address to,
-        uint256 chainId,
-        uint256 amount
-    ) private {
-        emit NativeTokenRedeemed(to, chainId, amount);
-        (bool success, ) = payable(to).call{value: msg.value}("");
+    // function _redeemNativeToken(
+    //     address to,
+    //     uint256 chainId,
+    //     uint256 amount
+    // ) private {
+    //     emit NativeTokenRedeemed(to, chainId, amount);
+    //     (bool success, ) = payable(to).call{value: msg.value}("");
 
-        if (!success) revert TRANSFER_FAILED();
-    }
+    //     if (!success) revert TRANSFER_FAILED();
+    // }
 }
 
 interface IWETH9 {
@@ -546,6 +547,8 @@ interface IFToken {
     function withdraw(uint256 amount) external;
 
     function burn(uint256 amount) external;
+
+    function burnFrom(address account, uint256 amount) external;
 
     function mint(address to, uint256 amount) external;
 }

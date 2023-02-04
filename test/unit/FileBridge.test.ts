@@ -70,12 +70,9 @@ if (chainId != 31337) {
 
         describe("wrapped token functions", function () {
             it("Correctly add token to acception token mapping", async () => {
-                expect(
-                    await fileBridge.addWToken(
-                        mockToken.address,
-                        fileToken.address
-                    )
-                ).to.emit("FileBridge", "TokenAddedToList")
+                await expect(
+                    fileBridge.addWToken(mockToken.address, fileToken.address)
+                ).to.emit(fileBridge, "TokenAddedToList")
 
                 const expectedWToken = await fileBridge.tokenToWTokenMap(
                     mockToken.address
@@ -93,9 +90,9 @@ if (chainId != 31337) {
 
             it("Correctly remove token from acception token mapping", async () => {
                 await fileBridge.addWToken(mockToken.address, fileToken.address)
-                expect(
-                    await fileBridge.removeWToken(mockToken.address)
-                ).to.emit("FileBridge", "TokenRemovedFromList")
+                await expect(
+                    fileBridge.removeWToken(mockToken.address)
+                ).to.emit(fileBridge, "TokenRemovedFromList")
 
                 const expectedWToken = await fileBridge.tokenToWTokenMap(
                     mockToken.address
@@ -112,12 +109,10 @@ if (chainId != 31337) {
 
             it("Correctly change token in acception token mapping", async () => {
                 await fileBridge.addWToken(mockToken.address, fileToken.address)
-                expect(
-                    await fileBridge.changeWToken(
-                        mockToken.address,
-                        deployer.address
-                    )
-                ).to.emit("FileBridge", "TokenRemovedFromList")
+
+                await expect(
+                    fileBridge.changeWToken(mockToken.address, deployer.address)
+                ).to.emit(fileBridge, "TokenChangedInList")
 
                 const expectedWToken = await fileBridge.tokenToWTokenMap(
                     mockToken.address
@@ -142,14 +137,21 @@ if (chainId != 31337) {
                 await fileBridge.addWToken(mockToken.address, fileToken.address)
             })
             it("emits event correctly", async () => {
-                expect(
-                    await fileBridge.depositToken(
+                await expect(
+                    fileBridge.depositToken(
                         deployer.address,
                         1,
                         mockToken.address,
                         amountOfDai
                     )
-                ).to.emit("FileBridge", "TokenDeposit")
+                )
+                    .to.emit(fileBridge, "TokenDeposited")
+                    .withArgs(
+                        deployer.address,
+                        1,
+                        mockToken.address,
+                        amountOfDai
+                    )
             })
 
             it("Transfer Token correctly", async () => {
@@ -186,6 +188,86 @@ if (chainId != 31337) {
                     deployer.address,
                     1,
                     mockToken.address,
+                    amountOfDai
+                )
+            })
+
+            it("Correctly readeem token", async () => {
+                const nonce = await fileBridge.nonces(deployer.address)
+                const hash = await fileBridge.redeemTokenHashGenerator(
+                    deployer.address,
+                    31337,
+                    mockToken.address,
+                    amountOfDai,
+                    nonce
+                )
+
+                const sig = signingKey.signDigest(hash)
+
+                await fileBridge.redeemToken(
+                    deployer.address,
+                    31337,
+                    mockToken.address,
+                    amountOfDai,
+                    guardian.address,
+                    sig.r,
+                    sig._vs
+                )
+            })
+        })
+
+        describe("depositFToken functions control", function () {
+            beforeEach(async () => {
+                await fileToken.approve(fileBridge.address, amountOfDai)
+                await fileBridge.addWToken(mockToken.address, fileToken.address)
+            })
+            it("emits event correctly", async () => {
+                await expect(
+                    fileBridge.depositFToken(
+                        deployer.address,
+                        1,
+                        fileToken.address,
+                        amountOfDai
+                    )
+                )
+                    .to.emit(fileBridge, "FTokenDeposited")
+                    .withArgs(
+                        deployer.address,
+                        1,
+                        fileToken.address,
+                        amountOfDai
+                    )
+            })
+
+            it("Transfer Token correctly", async () => {
+                await fileBridge.depositFToken(
+                    deployer.address,
+                    1,
+                    fileToken.address,
+                    amountOfDai
+                )
+
+                const expectedContractBalance = await fileToken.balanceOf(
+                    fileBridge.address
+                )
+
+                expect(expectedContractBalance).to.eq(0)
+            })
+        })
+
+        describe("redeemFToken functions control", function () {
+            const signingKey = new ethers.utils.SigningKey(
+                "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+            )
+
+            beforeEach(async () => {
+                await fileToken.approve(fileBridge.address, amountOfDai)
+                await fileBridge.addWToken(mockToken.address, fileToken.address)
+
+                await fileBridge.depositFToken(
+                    deployer.address,
+                    1,
+                    fileToken.address,
                     amountOfDai
                 )
             })

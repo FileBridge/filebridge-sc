@@ -20,7 +20,7 @@ const deployFileswapLibrary: DeployFunction = async function (
     const fileswapV2Library = await deploy("FileswapV2Library", {
         from: deployer,
         log: true,
-        maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
+        // maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
         args: args,
         waitConfirmations: chainId === 31337 || chainId === 3141 ? 1 : 5,
     })

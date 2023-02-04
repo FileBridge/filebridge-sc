@@ -21,7 +21,7 @@ const deployFileswapFactory: DeployFunction = async function (
     const fileswapV2Factory = await deploy("FileswapV2Factory", {
         from: deployer,
         log: true,
-        maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
+        // maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
         args: args,
         waitConfirmations: chainId === 31337 || chainId === 3141 ? 1 : 5,
     })
@@ -32,7 +32,7 @@ const deployFileswapFactory: DeployFunction = async function (
     )) as FileswapV2Factory
     gasData = await ethers.provider.getFeeData()
     await fileswapV2FactoryContract.setFeeTo(deployer, {
-        maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
+        // maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
     })
 
     log(`FileswapFactory deployed at ${fileswapV2Factory.address}`)

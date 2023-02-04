@@ -26,18 +26,28 @@ import type {
 export interface IFTokenInterface extends utils.Interface {
   functions: {
     "burn(uint256)": FunctionFragment;
+    "burnFrom(address,uint256)": FunctionFragment;
     "deposit(uint256)": FunctionFragment;
     "mint(address,uint256)": FunctionFragment;
     "withdraw(uint256)": FunctionFragment;
   };
 
   getFunction(
-    nameOrSignatureOrTopic: "burn" | "deposit" | "mint" | "withdraw"
+    nameOrSignatureOrTopic:
+      | "burn"
+      | "burnFrom"
+      | "deposit"
+      | "mint"
+      | "withdraw"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "burn",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "burnFrom",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "deposit",
@@ -53,6 +63,7 @@ export interface IFTokenInterface extends utils.Interface {
   ): string;
 
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "burnFrom", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "deposit", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
@@ -92,6 +103,12 @@ export interface IFToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    burnFrom(
+      account: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     deposit(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -114,6 +131,12 @@ export interface IFToken extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  burnFrom(
+    account: PromiseOrValue<string>,
+    amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   deposit(
     amount: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -132,6 +155,12 @@ export interface IFToken extends BaseContract {
 
   callStatic: {
     burn(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    burnFrom(
+      account: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -161,6 +190,12 @@ export interface IFToken extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    burnFrom(
+      account: PromiseOrValue<string>,
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     deposit(
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -180,6 +215,12 @@ export interface IFToken extends BaseContract {
 
   populateTransaction: {
     burn(
+      amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    burnFrom(
+      account: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;

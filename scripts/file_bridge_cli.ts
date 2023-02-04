@@ -1,4 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
+import { BigNumber } from "ethers"
 import { deployments, ethers, getNamedAccounts, network } from "hardhat"
 import * as readline from "readline"
 import {
@@ -13,6 +14,7 @@ import {
 let fileBridge: FileBridge,
     deployer: SignerWithAddress,
     guardian: SignerWithAddress,
+    client: SignerWithAddress,
     GOVERNANCE_ROLE: string,
     DEFAULT_ADMIN_ROLE: string,
     mockTokens: any = {},
@@ -34,7 +36,9 @@ async function main() {
 }
 
 async function initContracts() {
-    await deployments.fixture(["all"])
+    if (chainId === 31337) {
+        await deployments.fixture(["all"])
+    }
     fileBridge = await ethers.getContract("FileBridge", deployer)
     const mockToken = (await ethers.getContract("Token")) as Token,
         fileToken = (await ethers.getContract("FToken")) as FToken
@@ -56,8 +60,15 @@ async function initContracts() {
 
 async function initAccounts() {
     const accounts = await ethers.getSigners()
-    deployer = accounts[0]
-    guardian = accounts[1]
+    if (chainId === 31337) {
+        deployer = accounts[0]
+        guardian = accounts[1]
+        client = accounts[2]
+    } else {
+        deployer = accounts[2]
+        guardian = accounts[1]
+        client = accounts[0]
+    }
 }
 
 async function mainMenu(rl: readline.Interface) {
@@ -67,7 +78,7 @@ async function mainMenu(rl: readline.Interface) {
 function menuOptions(rl: readline.Interface) {
     console.log("__________________________________________________")
     rl.question(
-        "Select operation: \n Options: \n [0]: Exit \n [1]: Clear console \n [2]: Check mock Tokens \n [3]: Check file wrapped FTokens \n [4]: deploy mock Token \n [5]: deploy file wrapped Token \n [6]: mint Token \n [7]: deposit token and mint wrapped FToken \n",
+        "Select operation: \n Options: \n [0]: Exit \n [1]: Clear console \n [2]: Check mock Tokens \n [3]: Check file wrapped FTokens \n [4]: deploy mock Token \n [5]: deploy file wrapped Token \n [6]: mint Token \n [7]: deposit token and mint wrapped FToken \n [8]: check balances \n [9]: redeem Token \n",
         async (answer: string) => {
             console.log(`Selected: ${answer}`)
             console.log("__________________________________________________\n")
@@ -182,7 +193,49 @@ function menuOptions(rl: readline.Interface) {
                         }
                     )
                     break
+                case 8:
+                    rl.question(
+                        "Input the address\n",
+                        async (owner: string) => {
+                            try {
+                                await checkBalances(owner)
+                            } catch (error) {
+                                console.log("error\n")
+                                console.log({ error })
+                            }
+                            mainMenu(rl)
+                        }
+                    )
 
+                    break
+                case 9:
+                    rl.question(
+                        "IInput token name or address\n",
+                        async (token: string) => {
+                            rl.question(
+                                "Input the address\n",
+                                async (to: string) => {
+                                    rl.question(
+                                        "Input amount in Ether\n",
+                                        async (amountInEther: string) => {
+                                            try {
+                                                await redeemToken(
+                                                    token,
+                                                    to,
+                                                    Number(amountInEther)
+                                                )
+                                            } catch (error) {
+                                                console.log("error\n")
+                                                console.log({ error })
+                                            }
+                                            mainMenu(rl)
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    )
+                    break
                 default:
                     throw new Error("Invalid option")
             }
@@ -318,9 +371,9 @@ async function depositAndMint(token: string, amountInEther: number) {
     let tokenSymbol: string
 
     if (token.length === 42) {
-        for (let key in fileTokens) {
-            if (fileTokens[key]["address"] === token) {
-                tokenSymbol = fileTokens[key]["symbol"]
+        for (let key in mockTokens) {
+            if (mockTokens[key]["address"] === token) {
+                tokenSymbol = mockTokens[key]["symbol"]
                 break
             }
         }
@@ -330,19 +383,19 @@ async function depositAndMint(token: string, amountInEther: number) {
 
     const FToken: FToken = await ethers.getContractAt(
         "FToken",
-        fileTokens[tokenSymbol!]["address"],
-        deployer
+        fileTokens[`F${tokenSymbol!}`]["address"],
+        client
     )
 
     const mockToken = (await ethers.getContractAt(
         "Token",
-        mockTokens[tokenSymbol!.slice(1)]["address"],
-        deployer
+        mockTokens[tokenSymbol!]["address"],
+        client
     )) as Token
 
     console.log(
         `Approving ${amountInEther} (${
-            mockTokens[tokenSymbol!.slice(1)]["name"]
+            mockTokens[tokenSymbol!]["name"]
         }) and waiting for confirmations...`
     )
 
@@ -359,7 +412,7 @@ async function depositAndMint(token: string, amountInEther: number) {
 
     console.log(
         `Depositing ${amountInEther} (${
-            fileTokens[tokenSymbol!]["name"]
+            fileTokens[`F${tokenSymbol!}`]["name"]
         }) and waiting for confirmations...`
     )
     txResponse = await FToken.deposit(amountBigInWei, {
@@ -372,6 +425,82 @@ async function depositAndMint(token: string, amountInEther: number) {
     console.log(
         `Confirmed! Number of confirmations: ${txReveipt.confirmations}\n`
     )
+}
+
+async function redeemToken(token: string, to: string, amountInEther: number) {
+    const amountBigInWei = ethers.utils.parseEther(amountInEther.toString())
+
+    let tokenSymbol: string
+
+    if (token.length === 42) {
+        for (let key in mockTokens) {
+            if (mockTokens[key]["address"] === token) {
+                tokenSymbol = mockTokens[key]["symbol"]
+                break
+            }
+        }
+    } else {
+        tokenSymbol = token
+    }
+    const signingKey = new ethers.utils.SigningKey(process.env.WALLET2!)
+
+    const { deployer, guardian } = await getNamedAccounts()
+
+    const fileBridge = (await ethers.getContract(
+            "FileBridge",
+            deployer
+        )) as FileBridge,
+        mockToken = (await ethers.getContract("Token")) as Token
+
+    const nonce = await fileBridge.nonces(guardian)
+    const hash = await fileBridge.redeemTokenHashGenerator(
+        to,
+        80001,
+        mockToken.address,
+        amountBigInWei,
+        nonce
+    )
+
+    const sig = signingKey.signDigest(hash)
+
+    const txResponse = await fileBridge.redeemToken(
+        to,
+        80001,
+        mockToken.address,
+        amountBigInWei,
+        guardian,
+        sig.r,
+        sig._vs
+    )
+    console.log(`Sent with hash: ${txResponse.hash}`)
+    const txReceipt = await txResponse.wait()
+    console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+}
+
+async function checkBalances(owner: string) {
+    let _token: Token, balance: BigNumber
+    for (let key in mockTokens) {
+        _token = await ethers.getContractAt("Token", mockTokens[key]["address"])
+        balance = await _token.balanceOf(owner)
+        console.log(
+            `The address has ${ethers.utils
+                .formatEther(balance)
+                .toString()} Ether balance of (${mockTokens[key]["name"]})`
+        )
+    }
+
+    for (let key in fileTokens) {
+        _token = await ethers.getContractAt(
+            "FToken",
+            fileTokens[key]["address"]
+        )
+        balance = await _token.balanceOf(owner)
+        console.log(
+            `The address has ${ethers.utils
+                .formatEther(balance)
+                .toString()} Ether balance of (${fileTokens[key]["name"]})`
+        )
+    }
 }
 
 main().catch((error) => {

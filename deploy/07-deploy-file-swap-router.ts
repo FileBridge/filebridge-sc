@@ -24,7 +24,7 @@ const deployFileswapRouter: DeployFunction = async function (
     const fileswapV2Router02 = await deploy("FileswapV2Router02", {
         from: deployer,
         log: true,
-        maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
+        // maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
         args: args,
         waitConfirmations: chainId === 31337 || chainId === 3141 ? 1 : 5,
         libraries: {

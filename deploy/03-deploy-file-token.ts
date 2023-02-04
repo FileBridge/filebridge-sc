@@ -24,7 +24,7 @@ const deployFileToken: DeployFunction = async function (
     const fileToken = await deploy("FToken", {
         from: deployer,
         log: true,
-        maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
+        // maxPriorityFeePerGas: gasData.maxPriorityFeePerGas!,
         args: args,
         waitConfirmations: chainId === 31337 || chainId === 3141 ? 1 : 5,
     })
