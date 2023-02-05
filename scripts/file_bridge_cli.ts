@@ -474,7 +474,7 @@ async function depositAndMint(token: string, amountInEther: number) {
 
 async function depositToken(
     to: string,
-    chainId: number,
+    _chainId: number,
     token: string,
     amountInEther: number
 ) {
@@ -496,21 +496,44 @@ async function depositToken(
     const { client } = await getNamedAccounts()
 
     const fileBridge = (await ethers.getContract(
-        "FileBridge",
-        deployer
-    )) as FileBridge
+            "FileBridge",
+            client
+        )) as FileBridge,
+        mockToken = (await ethers.getContract("Token", client)) as Token
+
+    console.log(
+        `Approving ${amountInEther} (${
+            mockTokens[`${tokenSymbol!}`]["name"]
+        }) and waiting for confirmations...`
+    )
+    let txResponse: ContractTransaction
+    if (chainId === 3141) {
+        txResponse = await mockToken.approve(
+            fileBridge.address,
+            amountBigInWei,
+            {
+                maxPriorityFeePerGas: (
+                    await ethers.provider.getFeeData()
+                ).maxPriorityFeePerGas!,
+            }
+        )
+    } else {
+        txResponse = await mockToken.approve(fileBridge.address, amountBigInWei)
+    }
+    console.log(`Sent with hash: ${txResponse.hash}`)
+    let txReceipt = await txResponse.wait()
+    console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
 
     console.log(
         `Depositing ${amountInEther} (${
-            mockTokens[`F${tokenSymbol!}`]["name"]
+            mockTokens[`${tokenSymbol!}`]["name"]
         }) and waiting for confirmations...`
     )
 
-    let txResponse: ContractTransaction
     if (chainId === 3141) {
         txResponse = await fileBridge.depositToken(
-            client,
-            chainId,
+            to,
+            _chainId,
             mockTokens[tokenSymbol!]["address"],
             amountBigInWei,
             {
@@ -521,14 +544,14 @@ async function depositToken(
         )
     } else {
         txResponse = await fileBridge.depositToken(
-            client,
-            chainId,
+            to,
+            _chainId,
             mockTokens[tokenSymbol!]["address"],
             amountBigInWei
         )
     }
     console.log(`Sent with hash: ${txResponse.hash}`)
-    const txReceipt = await txResponse.wait()
+    txReceipt = await txResponse.wait()
     console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
 }
 
