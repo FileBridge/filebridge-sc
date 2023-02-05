@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { BigNumber } from "ethers"
+import { BigNumber, ContractTransaction } from "ethers"
 import { deployments, ethers, getNamedAccounts, network } from "hardhat"
 import * as readline from "readline"
 import {
@@ -78,7 +78,7 @@ async function mainMenu(rl: readline.Interface) {
 function menuOptions(rl: readline.Interface) {
     console.log("__________________________________________________")
     rl.question(
-        "Select operation: \n Options: \n [0]: Exit \n [1]: Clear console \n [2]: Check mock Tokens \n [3]: Check file wrapped FTokens \n [4]: deploy mock Token \n [5]: deploy file wrapped Token \n [6]: mint Token \n [7]: deposit token and mint wrapped FToken \n [8]: check balances \n [9]: redeem Token \n",
+        "Select operation: \n Options: \n [0]: Exit \n [1]: Clear console \n [2]: Check mock Tokens \n [3]: Check file wrapped FTokens \n [4]: deploy mock Token \n [5]: deploy file wrapped Token \n [6]: mint Token \n [7]: deposit token and mint wrapped FToken \n [8]: check balances \n [9]: deposit Token \n [10]: redeem Token \n",
         async (answer: string) => {
             console.log(`Selected: ${answer}`)
             console.log("__________________________________________________\n")
@@ -206,11 +206,41 @@ function menuOptions(rl: readline.Interface) {
                             mainMenu(rl)
                         }
                     )
-
                     break
                 case 9:
+                    rl.question("Input the address\n", async (to: string) => {
+                        rl.question(
+                            "Input the chainID\n",
+                            async (chainId: string) => {
+                                rl.question(
+                                    "Input token name or address\n",
+                                    async (token: string) => {
+                                        rl.question(
+                                            "Input amount in Ether\n",
+                                            async (amountInEther: string) => {
+                                                try {
+                                                    await depositToken(
+                                                        to,
+                                                        Number(chainId),
+                                                        token,
+                                                        Number(amountInEther)
+                                                    )
+                                                } catch (error) {
+                                                    console.log("error\n")
+                                                    console.log({ error })
+                                                }
+                                                mainMenu(rl)
+                                            }
+                                        )
+                                    }
+                                )
+                            }
+                        )
+                    })
+                    break
+                case 10:
                     rl.question(
-                        "IInput token name or address\n",
+                        "Input token name or address\n",
                         async (token: string) => {
                             rl.question(
                                 "Input the address\n",
@@ -348,12 +378,16 @@ async function mintToken(token: string, to: string, amountInEther: number) {
         mockTokens[tokenSymbol!]["address"],
         deployer
     )) as Token
-
-    let txResponse = await mockToken.mint(to, amountBigInWei, {
-        maxPriorityFeePerGas: (
-            await ethers.provider.getFeeData()
-        ).maxPriorityFeePerGas!,
-    })
+    let txResponse: ContractTransaction
+    if (chainId === 3141) {
+        txResponse = await mockToken.mint(to, amountBigInWei, {
+            maxPriorityFeePerGas: (
+                await ethers.provider.getFeeData()
+            ).maxPriorityFeePerGas!,
+        })
+    } else {
+        txResponse = await mockToken.mint(to, amountBigInWei)
+    }
     console.log(`tx submitted: ${txResponse.hash}`)
     let txReveipt = await txResponse.wait()
     console.log(
@@ -399,11 +433,17 @@ async function depositAndMint(token: string, amountInEther: number) {
         }) and waiting for confirmations...`
     )
 
-    let txResponse = await mockToken.approve(FToken.address, amountBigInWei, {
-        maxPriorityFeePerGas: (
-            await ethers.provider.getFeeData()
-        ).maxPriorityFeePerGas!,
-    })
+    let txResponse: ContractTransaction
+    if (chainId === 3141) {
+        txResponse = await mockToken.approve(FToken.address, amountBigInWei, {
+            maxPriorityFeePerGas: (
+                await ethers.provider.getFeeData()
+            ).maxPriorityFeePerGas!,
+        })
+    } else {
+        txResponse = await mockToken.approve(FToken.address, amountBigInWei)
+    }
+
     console.log(`tx submitted: ${txResponse.hash}`)
     let txReveipt = await txResponse.wait()
     console.log(
@@ -415,16 +455,81 @@ async function depositAndMint(token: string, amountInEther: number) {
             fileTokens[`F${tokenSymbol!}`]["name"]
         }) and waiting for confirmations...`
     )
-    txResponse = await FToken.deposit(amountBigInWei, {
-        maxPriorityFeePerGas: (
-            await ethers.provider.getFeeData()
-        ).maxPriorityFeePerGas!,
-    })
+
+    if (chainId === 3141) {
+        txResponse = await FToken.deposit(amountBigInWei, {
+            maxPriorityFeePerGas: (
+                await ethers.provider.getFeeData()
+            ).maxPriorityFeePerGas!,
+        })
+    } else {
+        txResponse = await FToken.deposit(amountBigInWei)
+    }
     console.log(`tx submitted: ${txResponse.hash}`)
     txReveipt = await txResponse.wait()
     console.log(
         `Confirmed! Number of confirmations: ${txReveipt.confirmations}\n`
     )
+}
+
+async function depositToken(
+    to: string,
+    chainId: number,
+    token: string,
+    amountInEther: number
+) {
+    const amountBigInWei = ethers.utils.parseEther(amountInEther.toString())
+
+    let tokenSymbol: string
+
+    if (token.length === 42) {
+        for (let key in mockTokens) {
+            if (mockTokens[key]["address"] === token) {
+                tokenSymbol = mockTokens[key]["symbol"]
+                break
+            }
+        }
+    } else {
+        tokenSymbol = token
+    }
+
+    const { client } = await getNamedAccounts()
+
+    const fileBridge = (await ethers.getContract(
+        "FileBridge",
+        deployer
+    )) as FileBridge
+
+    console.log(
+        `Depositing ${amountInEther} (${
+            mockTokens[`F${tokenSymbol!}`]["name"]
+        }) and waiting for confirmations...`
+    )
+
+    let txResponse: ContractTransaction
+    if (chainId === 3141) {
+        txResponse = await fileBridge.depositToken(
+            client,
+            chainId,
+            mockTokens[tokenSymbol!]["address"],
+            amountBigInWei,
+            {
+                maxPriorityFeePerGas: (
+                    await ethers.provider.getFeeData()
+                ).maxPriorityFeePerGas!,
+            }
+        )
+    } else {
+        txResponse = await fileBridge.depositToken(
+            client,
+            chainId,
+            mockTokens[tokenSymbol!]["address"],
+            amountBigInWei
+        )
+    }
+    console.log(`Sent with hash: ${txResponse.hash}`)
+    const txReceipt = await txResponse.wait()
+    console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
 }
 
 async function redeemToken(token: string, to: string, amountInEther: number) {
@@ -463,15 +568,33 @@ async function redeemToken(token: string, to: string, amountInEther: number) {
 
     const sig = signingKey.signDigest(hash)
 
-    const txResponse = await fileBridge.redeemToken(
-        to,
-        80001,
-        mockToken.address,
-        amountBigInWei,
-        guardian,
-        sig.r,
-        sig._vs
-    )
+    let txResponse: ContractTransaction
+    if (chainId === 3141) {
+        txResponse = await fileBridge.redeemToken(
+            to,
+            80001,
+            mockToken.address,
+            amountBigInWei,
+            guardian,
+            sig.r,
+            sig._vs,
+            {
+                maxPriorityFeePerGas: (
+                    await ethers.provider.getFeeData()
+                ).maxPriorityFeePerGas!,
+            }
+        )
+    } else {
+        txResponse = await fileBridge.redeemToken(
+            to,
+            80001,
+            mockToken.address,
+            amountBigInWei,
+            guardian,
+            sig.r,
+            sig._vs
+        )
+    }
     console.log(`Sent with hash: ${txResponse.hash}`)
     const txReceipt = await txResponse.wait()
     console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
