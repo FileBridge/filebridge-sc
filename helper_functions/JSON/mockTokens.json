@@ -1,0 +1,53 @@
+{
+    "goerli": {
+        "DAI": {
+            "name": "DAI TOKEN",
+            "symbol": "DAI",
+            "address": "0xF05F994F7dCc5cBE6ca978BcEeB21d1C5A60ea0c"
+        },
+        "WBTC": {
+            "name": "Wrapped BTC",
+            "symbol": "WBTC",
+            "address": "0xD486C6354A4dfe1D746A30Ac7259aac649aCd869"
+        },
+        "WETH": {
+            "name": "Wrapped ETH",
+            "symbol": "WETH",
+            "address": "0x2b49114E78cEcaE355ba24F69d99d086cAa09c84"
+        }
+    },
+    "mumbai": {
+        "DAI": {
+            "name": "DAI TOKEN",
+            "symbol": "DAI",
+            "address": "0xF05F994F7dCc5cBE6ca978BcEeB21d1C5A60ea0c"
+        },
+        "WBTC": {
+            "name": "Wrapped BTC",
+            "symbol": "WBTC",
+            "address": "0x28Ee3789AB364B8F4528a00e4a67a0c0F97eD235"
+        },
+        "WETH": {
+            "name": "Wrapped ETH",
+            "symbol": "WETH",
+            "address": "0x52df5817Fdb189A30B584ef712B4d97A1D39003A"
+        }
+    },
+    "hyperspace": {
+        "DAI": {
+            "name": "DAI TOKEN",
+            "symbol": "DAI",
+            "address": "0xF05F994F7dCc5cBE6ca978BcEeB21d1C5A60ea0c"
+        },
+        "WBTC": {
+            "name": "Wrapped BTC",
+            "symbol": "WBTC",
+            "address": "0x0a69DcAAb5D509Ef67C09BDEDd1CBbb728a06A0E"
+        },
+        "WETH": {
+            "name": "Wrapped ETH",
+            "symbol": "WETH",
+            "address": "0x6594C78AA0fD8f18563E17fB6327F3e6F5fa3790"
+        }
+    }
+}

@@ -1,15 +1,29 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers"
-import { BigNumber, ContractTransaction } from "ethers"
+import { BigNumber, ContractReceipt, ContractTransaction } from "ethers"
 import { deployments, ethers, getNamedAccounts, network } from "hardhat"
 import * as readline from "readline"
 import {
     FileBridge,
     FileswapV2Factory,
+    FileswapV2Pair,
     FileswapV2Router02,
     FToken,
     Token,
     WFil,
 } from "../typechain-types"
+
+import fs from "fs"
+
+import fileSwapAddressesJson from "../helper_functions/JSON/fileswap-addresses.json"
+import fileSwapTokensJson from "../helper_functions/JSON/mockTokens.json"
+import { DeployResult } from "hardhat-deploy/dist/types"
+import { TransactionReceipt } from "@ethersproject/providers"
+
+const chainMapping: any = {
+    5: "goerli",
+    80001: "mumbai",
+    3141: "hyperspace",
+}
 
 let fileBridge: FileBridge,
     deployer: SignerWithAddress,
@@ -23,7 +37,7 @@ let fileBridge: FileBridge,
     fileswapV2Router02: FileswapV2Router02,
     wFil: WFil,
     { deploy } = deployments,
-    chainId = network.config.chainId
+    chainId = network.config.chainId!
 
 async function main() {
     await initContracts()
@@ -78,7 +92,7 @@ async function mainMenu(rl: readline.Interface) {
 function menuOptions(rl: readline.Interface) {
     console.log("__________________________________________________")
     rl.question(
-        "Select operation: \n Options: \n [0]: Exit \n [1]: Clear console \n [2]: Check mock Tokens \n [3]: Check file wrapped FTokens \n [4]: deploy mock Token \n [5]: deploy file wrapped Token \n [6]: mint Token \n [7]: deposit token and mint wrapped FToken \n [8]: check balances \n [9]: deposit Token \n [10]: redeem Token \n",
+        "Select operation: \n Options: \n [0]: Exit \n [1]: Clear console \n [2]: Check mock Tokens \n [3]: Check file wrapped FTokens \n [4]: deploy mock Token \n [5]: deploy file wrapped Token \n [6]: mint Token \n [7]: deposit token and mint wrapped FToken \n [8]: check balances \n [9]: deposit Token \n [10]: redeem Token \n [11]: add liquidity \n [12]: swap \n",
         async (answer: string) => {
             console.log(`Selected: ${answer}`)
             console.log("__________________________________________________\n")
@@ -266,6 +280,45 @@ function menuOptions(rl: readline.Interface) {
                         }
                     )
                     break
+                case 11:
+                    rl.question("Ready ????\n", async (token: string) => {
+                        try {
+                            await addLiquidityFileSwap()
+                        } catch (error) {
+                            console.log("error\n")
+                            console.log({ error })
+                        }
+                        mainMenu(rl)
+                    })
+                    break
+                case 12:
+                    rl.question(
+                        "Input token in address ????\n",
+                        async (tokenIn: string) => {
+                            rl.question(
+                                "Input token out address ????\n",
+                                async (tokenOut: string) => {
+                                    rl.question(
+                                        "Input amount in Ether\n",
+                                        async (amountInEther: string) => {
+                                            try {
+                                                await swap(
+                                                    tokenIn,
+                                                    tokenOut,
+                                                    Number(amountInEther)
+                                                )
+                                            } catch (error) {
+                                                console.log("error\n")
+                                                console.log({ error })
+                                            }
+                                            mainMenu(rl)
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    )
+                    break
                 default:
                     throw new Error("Invalid option")
             }
@@ -295,19 +348,32 @@ async function checkfileToken() {
 }
 
 async function deployMockToken(name: string, symbol: string) {
+    let exchangeConstruct: any = fileSwapAddressesJson
     const args = [name, symbol]
 
     console.log(`Deploying ${name} and waiting for confirmations...`)
+    let _mockToken: DeployResult
+    if (chainId === 3141) {
+        _mockToken = await deploy("Token", {
+            from: deployer.address,
+            log: true,
+            maxPriorityFeePerGas: (
+                await ethers.provider.getFeeData()
+            ).maxPriorityFeePerGas!,
+            args: args,
+            waitConfirmations: 1,
+        })
+    } else {
+        _mockToken = await deploy("Token", {
+            from: deployer.address,
+            log: true,
+            args: args,
+            waitConfirmations: 1,
+        })
+    }
 
-    const _mockToken = await deploy("Token", {
-        from: deployer.address,
-        log: true,
-        maxPriorityFeePerGas: (
-            await ethers.provider.getFeeData()
-        ).maxPriorityFeePerGas!,
-        args: args,
-        waitConfirmations: 1,
-    })
+    const chain = chainMapping[chainId]
+    exchangeConstruct[chain][symbol] = _mockToken.address
 
     mockTokens[symbol] = {
         name: name,
@@ -317,6 +383,16 @@ async function deployMockToken(name: string, symbol: string) {
 
     console.log(`${name} deployed at ${_mockToken.address}`)
     console.log("__________________________________________________")
+
+    /* __________ export to Json parts __________ */
+    const jsonDataString = JSON.stringify(exchangeConstruct)
+    fs.writeFileSync(
+        "./helper_functions/JSON/fileswap-addresses.json",
+        jsonDataString,
+        {
+            encoding: "utf8",
+        }
+    )
 }
 
 async function deployFileToken(
@@ -350,32 +426,33 @@ async function deployFileToken(
 }
 
 async function mintToken(token: string, to: string, amountInEther: number) {
+    let exchangeConstruct: any = fileSwapAddressesJson
     const amountBigInWei = ethers.utils.parseEther(amountInEther.toString())
 
     to = to.length === 0 ? deployer.address : to
 
-    let tokenSymbol: string
+    const chain = chainMapping[chainId] as string
+
+    let tokenAddress: string
 
     if (token.length === 42) {
-        for (let key in fileTokens) {
-            if (fileTokens[key]["address"] === token) {
-                tokenSymbol = fileTokens[key]["symbol"]
+        tokenAddress = token
+    } else {
+        for (let key in exchangeConstruct[chain]) {
+            if (key === token) {
+                tokenAddress = exchangeConstruct[chain][key]
                 break
             }
         }
-    } else {
-        tokenSymbol = token
     }
 
     console.log(
-        `Minting ${amountInEther} (${mockTokens[tokenSymbol!]["name"]}) to ${
-            mockTokens[tokenSymbol!]["address"]
-        } and waiting for confirmations...`
+        `Minting ${amountInEther} ${tokenAddress!} and waiting for confirmations...`
     )
 
     const mockToken = (await ethers.getContractAt(
         "Token",
-        mockTokens[tokenSymbol!]["address"],
+        tokenAddress!,
         deployer
     )) as Token
     let txResponse: ContractTransaction
@@ -625,13 +702,19 @@ async function redeemToken(token: string, to: string, amountInEther: number) {
 
 async function checkBalances(owner: string) {
     let _token: Token, balance: BigNumber
-    for (let key in mockTokens) {
-        _token = await ethers.getContractAt("Token", mockTokens[key]["address"])
+    const chain = chainMapping[chainId]
+    let fileSwapTokens: any = fileSwapTokensJson
+    const _mockTokens = fileSwapTokens[chain]
+    for (let key in _mockTokens) {
+        _token = await ethers.getContractAt(
+            "Token",
+            _mockTokens[key]["address"]
+        )
         balance = await _token.balanceOf(owner)
         console.log(
             `The address has ${ethers.utils
                 .formatEther(balance)
-                .toString()} Ether balance of (${mockTokens[key]["name"]})`
+                .toString()} Ether balance of (${_mockTokens[key]["name"]})`
         )
     }
 
@@ -646,6 +729,345 @@ async function checkBalances(owner: string) {
                 .formatEther(balance)
                 .toString()} Ether balance of (${fileTokens[key]["name"]})`
         )
+    }
+}
+
+async function addLiquidityFileSwap() {
+    const chain = chainMapping[chainId]
+    let fileSwapTokens: any = fileSwapTokensJson
+    const _mockTokens = fileSwapTokens[chain]
+
+    const amountOfBTC = ethers.utils.parseEther("10"),
+        amountOfETH = ethers.utils.parseEther("100"),
+        amountOfDAIPERBTC = ethers.utils.parseEther("232000"),
+        amountOfDAIPerETH = ethers.utils.parseEther("165200")
+
+    const mockWBTC: Token = await ethers.getContractAt(
+            "Token",
+            _mockTokens["WBTC"]["address"],
+            deployer
+        ),
+        mockWETH: Token = await ethers.getContractAt(
+            "Token",
+            _mockTokens["WETH"]["address"],
+            deployer
+        ),
+        mockDAI: Token = await ethers.getContractAt(
+            "Token",
+            _mockTokens["DAI"]["address"],
+            deployer
+        )
+
+    let txResponse: ContractTransaction
+    let txReceipt: ContractReceipt
+
+    if (chainId === 3141) {
+        console.log(`Approving WBTC and waiting for confirmations`)
+
+        txResponse = await mockWBTC.approve(
+            fileswapV2Router02.address,
+            amountOfBTC,
+            {
+                maxPriorityFeePerGas: (
+                    await ethers.provider.getFeeData()
+                ).maxPriorityFeePerGas!,
+            }
+        )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        console.log(`Approving WETH and waiting for confirmations`)
+
+        txResponse = await mockWETH.approve(
+            fileswapV2Router02.address,
+            amountOfETH,
+            {
+                maxPriorityFeePerGas: (
+                    await ethers.provider.getFeeData()
+                ).maxPriorityFeePerGas!,
+            }
+        )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        console.log(`Approving DAI and waiting for confirmations`)
+
+        txResponse = await mockDAI.approve(
+            fileswapV2Router02.address,
+            amountOfDAIPERBTC.add(amountOfDAIPerETH),
+            {
+                maxPriorityFeePerGas: (
+                    await ethers.provider.getFeeData()
+                ).maxPriorityFeePerGas!,
+            }
+        )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        console.log(
+            `Adding DAI/BTC to liquidity pool and waiting for confirmations`
+        )
+        let deadline = (
+            (await ethers.provider.getBlock("latest")).timestamp + 100
+        ).toString()
+
+        txResponse = await fileswapV2Router02
+            .connect(deployer)
+            .addLiquidity(
+                mockWBTC.address,
+                mockDAI.address,
+                amountOfBTC,
+                amountOfDAIPERBTC,
+                amountOfBTC,
+                amountOfDAIPERBTC,
+                deployer.address,
+                deadline,
+                {
+                    maxPriorityFeePerGas: (
+                        await ethers.provider.getFeeData()
+                    ).maxPriorityFeePerGas!,
+                }
+            )
+
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        console.log(
+            `Adding DAI/ETH to liquidity pool and waiting for confirmations`
+        )
+        deadline = (
+            (await ethers.provider.getBlock("latest")).timestamp + 100
+        ).toString()
+
+        txResponse = await fileswapV2Router02
+            .connect(deployer)
+            .addLiquidity(
+                mockWETH.address,
+                mockDAI.address,
+                amountOfETH,
+                amountOfDAIPerETH,
+                0,
+                0,
+                deployer.address,
+                deadline,
+                {
+                    maxPriorityFeePerGas: (
+                        await ethers.provider.getFeeData()
+                    ).maxPriorityFeePerGas!,
+                }
+            )
+
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+    } else {
+        console.log(`Approving WBTC and waiting for confirmations`)
+
+        txResponse = await mockWBTC.approve(
+            fileswapV2Router02.address,
+            amountOfBTC
+        )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        let txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        console.log(`Approving WETH and waiting for confirmations`)
+
+        txResponse = await mockWETH.approve(
+            fileswapV2Router02.address,
+            amountOfETH
+        )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        console.log(`Approving DAI and waiting for confirmations`)
+
+        txResponse = await mockDAI.approve(
+            fileswapV2Router02.address,
+            amountOfDAIPERBTC.add(amountOfDAIPerETH)
+        )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        console.log(
+            `Adding DAI/BTC to liquidity pool and waiting for confirmations`
+        )
+        let deadline = (
+            (await ethers.provider.getBlock("latest")).timestamp + 1000
+        ).toString()
+
+        txResponse = await fileswapV2Router02
+            .connect(deployer)
+            .addLiquidity(
+                mockWBTC.address,
+                mockDAI.address,
+                amountOfBTC,
+                amountOfDAIPERBTC,
+                amountOfBTC,
+                amountOfDAIPERBTC,
+                deployer.address,
+                deadline
+            )
+
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        console.log(
+            `Adding DAI/ETH to liquidity pool and waiting for confirmations`
+        )
+        deadline = (
+            (await ethers.provider.getBlock("latest")).timestamp + 100
+        ).toString()
+
+        txResponse = await fileswapV2Router02
+            .connect(deployer)
+            .addLiquidity(
+                mockWETH.address,
+                mockDAI.address,
+                amountOfETH,
+                amountOfDAIPerETH,
+                0,
+                0,
+                deployer.address,
+                deadline
+            )
+
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+    }
+}
+
+async function swap(tokenIn: string, tokenOut: string, amountInEther: number) {
+    const amountInWei = ethers.utils.parseEther(amountInEther.toString())
+
+    const tokenInContract: Token = await ethers.getContractAt(
+        "Token",
+        tokenIn,
+        client
+    )
+
+    let txResponse: ContractTransaction, txReceipt: TransactionReceipt
+
+    const pairAddress = await fileswapV2Factory.getPair(tokenIn, tokenOut),
+        pair = (await ethers.getContractAt(
+            "FileswapV2Pair",
+            pairAddress
+        )) as FileswapV2Pair
+    const token0 = await pair.token0()
+    let reserveIn: BigNumber, reserveOut: BigNumber
+    if (token0 === tokenIn) {
+        ;[reserveIn, reserveOut] = await pair.getReserves()
+    } else {
+        ;[reserveOut, reserveIn] = await pair.getReserves()
+    }
+
+    if (chainId === 3141) {
+        console.log(`Approving ${tokenIn} and waiting for confirmations ..`)
+
+        txResponse = await tokenInContract.approve(
+            fileswapV2Router02.address,
+            amountInWei,
+            {
+                maxPriorityFeePerGas: (
+                    await ethers.provider.getFeeData()
+                ).maxPriorityFeePerGas!,
+            }
+        )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* ---------------------------------------- */
+
+        console.log(`Swapping and waiting for confirmations ..`)
+
+        const amountOut = await fileswapV2Router02.getAmountOut(
+            amountInWei,
+            reserveIn,
+            reserveOut
+        )
+        let deadline = (
+            (await ethers.provider.getBlock("latest")).timestamp + 1000
+        ).toString()
+
+        txResponse = await fileswapV2Router02
+            .connect(client)
+            .swapExactTokensForTokens(
+                amountOut,
+                amountOut,
+                [tokenIn, tokenOut],
+                client.address,
+                deadline,
+                {
+                    maxPriorityFeePerGas: (
+                        await ethers.provider.getFeeData()
+                    ).maxPriorityFeePerGas!,
+                }
+            )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+    } else {
+        console.log(`Approving ${tokenIn} and waiting for confirmations ..`)
+
+        txResponse = await tokenInContract.approve(
+            fileswapV2Router02.address,
+            amountInWei
+        )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* ---------------------------------------- */
+
+        console.log(`Swapping and waiting for confirmations ..`)
+
+        const amountOut = await fileswapV2Router02.getAmountOut(
+            amountInWei,
+            reserveIn,
+            reserveOut
+        )
+
+        let deadline = (
+            (await ethers.provider.getBlock("latest")).timestamp + 1000
+        ).toString()
+
+        txResponse = await fileswapV2Router02
+            .connect(client)
+            .swapExactTokensForTokens(
+                amountInWei,
+                0,
+                [tokenIn, tokenOut],
+                client.address,
+                deadline
+            )
+        console.log(`Sent with hash: ${txResponse.hash}`)
+        txReceipt = await txResponse.wait()
+        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
     }
 }
 
