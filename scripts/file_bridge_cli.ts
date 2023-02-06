@@ -260,19 +260,29 @@ function menuOptions(rl: readline.Interface) {
                                 "Input the address\n",
                                 async (to: string) => {
                                     rl.question(
-                                        "Input amount in Ether\n",
-                                        async (amountInEther: string) => {
-                                            try {
-                                                await redeemToken(
-                                                    token,
-                                                    to,
-                                                    Number(amountInEther)
-                                                )
-                                            } catch (error) {
-                                                console.log("error\n")
-                                                console.log({ error })
-                                            }
-                                            mainMenu(rl)
+                                        "Input the des chain id\n",
+                                        async (_chainId: string) => {
+                                            rl.question(
+                                                "Input amount in Ether\n",
+                                                async (
+                                                    amountInEther: string
+                                                ) => {
+                                                    try {
+                                                        await redeemToken(
+                                                            token,
+                                                            to,
+                                                            Number(_chainId),
+                                                            Number(
+                                                                amountInEther
+                                                            )
+                                                        )
+                                                    } catch (error) {
+                                                        console.log("error\n")
+                                                        console.log({ error })
+                                                    }
+                                                    mainMenu(rl)
+                                                }
+                                            )
                                         }
                                     )
                                 }
@@ -328,7 +338,10 @@ function menuOptions(rl: readline.Interface) {
 
 async function checkMockToken() {
     let counter = 1
-    for (let key in mockTokens) {
+    const chain = chainMapping[chainId]
+    let fileSwapTokens: any = fileSwapTokensJson
+    const _mockTokens = fileSwapTokens[chain]
+    for (let key in _mockTokens) {
         console.log(`Token number ${counter} \n`)
         console.log(`Symbol\t${mockTokens[key]["symbol"]}`)
         console.log(`Name\t${mockTokens[key]["name"]}`)
@@ -338,7 +351,10 @@ async function checkMockToken() {
 }
 async function checkfileToken() {
     let counter = 1
-    for (let key in fileTokens) {
+    const chain = chainMapping[chainId]
+    let fileSwapTokens: any = fileSwapTokensJson
+    const _mockTokens = fileSwapTokens[chain]
+    for (let key in _mockTokens) {
         console.log(`Token number ${counter} \n`)
         console.log(`Symbol\t${fileTokens[key]["symbol"]}`)
         console.log(`Name\t${fileTokens[key]["name"]}`)
@@ -556,13 +572,16 @@ async function depositToken(
     amountInEther: number
 ) {
     const amountBigInWei = ethers.utils.parseEther(amountInEther.toString())
+    const chain = chainMapping[chainId]
+    let fileSwapTokens: any = fileSwapTokensJson
+    const _mockTokens = fileSwapTokens[chain]
 
     let tokenSymbol: string
 
     if (token.length === 42) {
-        for (let key in mockTokens) {
-            if (mockTokens[key]["address"] === token) {
-                tokenSymbol = mockTokens[key]["symbol"]
+        for (let key in _mockTokens) {
+            if (_mockTokens[key]["address"] === token) {
+                tokenSymbol = _mockTokens[key]["symbol"]
                 break
             }
         }
@@ -576,11 +595,15 @@ async function depositToken(
             "FileBridge",
             client
         )) as FileBridge,
-        mockToken = (await ethers.getContract("Token", client)) as Token
+        mockToken = (await ethers.getContractAt(
+            "Token",
+            _mockTokens[tokenSymbol!]["address"],
+            client
+        )) as Token
 
     console.log(
         `Approving ${amountInEther} (${
-            mockTokens[`${tokenSymbol!}`]["name"]
+            _mockTokens[`${tokenSymbol!}`]["name"]
         }) and waiting for confirmations...`
     )
     let txResponse: ContractTransaction
@@ -603,7 +626,7 @@ async function depositToken(
 
     console.log(
         `Depositing ${amountInEther} (${
-            mockTokens[`${tokenSymbol!}`]["name"]
+            _mockTokens[`${tokenSymbol!}`]["name"]
         }) and waiting for confirmations...`
     )
 
@@ -611,7 +634,7 @@ async function depositToken(
         txResponse = await fileBridge.depositToken(
             to,
             _chainId,
-            mockTokens[tokenSymbol!]["address"],
+            _mockTokens[tokenSymbol!]["address"],
             amountBigInWei,
             {
                 maxPriorityFeePerGas: (
@@ -623,7 +646,7 @@ async function depositToken(
         txResponse = await fileBridge.depositToken(
             to,
             _chainId,
-            mockTokens[tokenSymbol!]["address"],
+            _mockTokens[tokenSymbol!]["address"],
             amountBigInWei
         )
     }
@@ -632,15 +655,24 @@ async function depositToken(
     console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
 }
 
-async function redeemToken(token: string, to: string, amountInEther: number) {
+async function redeemToken(
+    token: string,
+    to: string,
+    _chainId: number,
+    amountInEther: number
+) {
     const amountBigInWei = ethers.utils.parseEther(amountInEther.toString())
+
+    const chain = chainMapping[chainId]
+    let fileSwapTokens: any = fileSwapTokensJson
+    const _mockTokens = fileSwapTokens[chain]
 
     let tokenSymbol: string
 
     if (token.length === 42) {
-        for (let key in mockTokens) {
-            if (mockTokens[key]["address"] === token) {
-                tokenSymbol = mockTokens[key]["symbol"]
+        for (let key in _mockTokens) {
+            if (_mockTokens[key]["address"] === token) {
+                tokenSymbol = _mockTokens[key]["symbol"]
                 break
             }
         }
@@ -655,12 +687,16 @@ async function redeemToken(token: string, to: string, amountInEther: number) {
             "FileBridge",
             deployer
         )) as FileBridge,
-        mockToken = (await ethers.getContract("Token")) as Token
+        mockToken = (await ethers.getContractAt(
+            "Token",
+            _mockTokens[tokenSymbol!]["address"],
+            client
+        )) as Token
 
     const nonce = await fileBridge.nonces(guardian)
     const hash = await fileBridge.redeemTokenHashGenerator(
         to,
-        80001,
+        _chainId,
         mockToken.address,
         amountBigInWei,
         nonce
@@ -672,7 +708,7 @@ async function redeemToken(token: string, to: string, amountInEther: number) {
     if (chainId === 3141) {
         txResponse = await fileBridge.redeemToken(
             to,
-            80001,
+            _chainId,
             mockToken.address,
             amountBigInWei,
             guardian,
@@ -687,7 +723,7 @@ async function redeemToken(token: string, to: string, amountInEther: number) {
     } else {
         txResponse = await fileBridge.redeemToken(
             to,
-            80001,
+            _chainId,
             mockToken.address,
             amountBigInWei,
             guardian,
@@ -705,6 +741,7 @@ async function checkBalances(owner: string) {
     const chain = chainMapping[chainId]
     let fileSwapTokens: any = fileSwapTokensJson
     const _mockTokens = fileSwapTokens[chain]
+
     for (let key in _mockTokens) {
         _token = await ethers.getContractAt(
             "Token",
@@ -740,7 +777,9 @@ async function addLiquidityFileSwap() {
     const amountOfBTC = ethers.utils.parseEther("10"),
         amountOfETH = ethers.utils.parseEther("100"),
         amountOfDAIPERBTC = ethers.utils.parseEther("232000"),
-        amountOfDAIPerETH = ethers.utils.parseEther("165200")
+        amountOfDAIPerETH = ethers.utils.parseEther("165200"),
+        amountOfMatic = ethers.utils.parseEther("119000"),
+        amountOfDAIPERMatic = ethers.utils.parseEther("100000")
 
     const mockWBTC: Token = await ethers.getContractAt(
             "Token",
@@ -756,34 +795,39 @@ async function addLiquidityFileSwap() {
             "Token",
             _mockTokens["DAI"]["address"],
             deployer
+        ),
+        mockMatic: Token = await ethers.getContractAt(
+            "Token",
+            _mockTokens["WMATIC"]["address"],
+            deployer
         )
 
     let txResponse: ContractTransaction
     let txReceipt: ContractReceipt
 
     if (chainId === 3141) {
-        console.log(`Approving WBTC and waiting for confirmations`)
+        // console.log(`Approving WBTC and waiting for confirmations`)
 
-        txResponse = await mockWBTC.approve(
-            fileswapV2Router02.address,
-            amountOfBTC,
-            {
-                maxPriorityFeePerGas: (
-                    await ethers.provider.getFeeData()
-                ).maxPriorityFeePerGas!,
-            }
-        )
-        console.log(`Sent with hash: ${txResponse.hash}`)
-        txReceipt = await txResponse.wait()
-        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+        // txResponse = await mockWBTC.approve(
+        //     fileswapV2Router02.address,
+        //     amountOfBTC,
+        //     {
+        //         maxPriorityFeePerGas: (
+        //             await ethers.provider.getFeeData()
+        //         ).maxPriorityFeePerGas!,
+        //     }
+        // )
+        // console.log(`Sent with hash: ${txResponse.hash}`)
+        // txReceipt = await txResponse.wait()
+        // console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
 
         /* -----------------------------------------------------------*/
 
-        console.log(`Approving WETH and waiting for confirmations`)
+        console.log(`Approving WMATIC and waiting for confirmations`)
 
-        txResponse = await mockWETH.approve(
+        txResponse = await mockMatic.approve(
             fileswapV2Router02.address,
-            amountOfETH,
+            amountOfMatic,
             {
                 maxPriorityFeePerGas: (
                     await ethers.provider.getFeeData()
@@ -800,7 +844,7 @@ async function addLiquidityFileSwap() {
 
         txResponse = await mockDAI.approve(
             fileswapV2Router02.address,
-            amountOfDAIPERBTC.add(amountOfDAIPerETH),
+            amountOfDAIPERMatic,
             {
                 maxPriorityFeePerGas: (
                     await ethers.provider.getFeeData()
@@ -814,7 +858,7 @@ async function addLiquidityFileSwap() {
         /* -----------------------------------------------------------*/
 
         console.log(
-            `Adding DAI/BTC to liquidity pool and waiting for confirmations`
+            `Adding DAI/Matic to liquidity pool and waiting for confirmations`
         )
         let deadline = (
             (await ethers.provider.getBlock("latest")).timestamp + 100
@@ -823,12 +867,12 @@ async function addLiquidityFileSwap() {
         txResponse = await fileswapV2Router02
             .connect(deployer)
             .addLiquidity(
-                mockWBTC.address,
+                mockMatic.address,
                 mockDAI.address,
-                amountOfBTC,
-                amountOfDAIPERBTC,
-                amountOfBTC,
-                amountOfDAIPERBTC,
+                amountOfMatic,
+                amountOfDAIPERMatic,
+                amountOfMatic,
+                amountOfDAIPERMatic,
                 deployer.address,
                 deadline,
                 {
@@ -844,52 +888,57 @@ async function addLiquidityFileSwap() {
 
         /* -----------------------------------------------------------*/
 
-        console.log(
-            `Adding DAI/ETH to liquidity pool and waiting for confirmations`
-        )
-        deadline = (
-            (await ethers.provider.getBlock("latest")).timestamp + 100
-        ).toString()
+        // console.log(
+        //     `Adding DAI/ETH to liquidity pool and waiting for confirmations`
+        // )
+        // deadline = (
+        //     (await ethers.provider.getBlock("latest")).timestamp + 100
+        // ).toString()
 
-        txResponse = await fileswapV2Router02
-            .connect(deployer)
-            .addLiquidity(
-                mockWETH.address,
-                mockDAI.address,
-                amountOfETH,
-                amountOfDAIPerETH,
-                0,
-                0,
-                deployer.address,
-                deadline,
-                {
-                    maxPriorityFeePerGas: (
-                        await ethers.provider.getFeeData()
-                    ).maxPriorityFeePerGas!,
-                }
-            )
+        // txResponse = await fileswapV2Router02
+        //     .connect(deployer)
+        //     .addLiquidity(
+        //         mockWETH.address,
+        //         mockDAI.address,
+        //         amountOfETH,
+        //         amountOfDAIPerETH,
+        //         0,
+        //         0,
+        //         deployer.address,
+        //         deadline,
+        //         {
+        //             maxPriorityFeePerGas: (
+        //                 await ethers.provider.getFeeData()
+        //             ).maxPriorityFeePerGas!,
+        //         }
+        //     )
 
-        console.log(`Sent with hash: ${txResponse.hash}`)
-        txReceipt = await txResponse.wait()
-        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+        // console.log(`Sent with hash: ${txResponse.hash}`)
+        // txReceipt = await txResponse.wait()
+        // console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
     } else {
-        console.log(`Approving WBTC and waiting for confirmations`)
+        // console.log(`Approving WBTC and waiting for confirmations`)
 
-        txResponse = await mockWBTC.approve(
-            fileswapV2Router02.address,
-            amountOfBTC
-        )
-        console.log(`Sent with hash: ${txResponse.hash}`)
-        let txReceipt = await txResponse.wait()
-        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+        // txResponse = await mockWBTC.approve(
+        //     fileswapV2Router02.address,
+        //     amountOfBTC,
+        //     {
+        //         maxPriorityFeePerGas: (
+        //             await ethers.provider.getFeeData()
+        //         ).maxPriorityFeePerGas!,
+        //     }
+        // )
+        // console.log(`Sent with hash: ${txResponse.hash}`)
+        // txReceipt = await txResponse.wait()
+        // console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
 
         /* -----------------------------------------------------------*/
 
-        console.log(`Approving WETH and waiting for confirmations`)
+        console.log(`Approving WMATIC and waiting for confirmations`)
 
-        txResponse = await mockWETH.approve(
+        txResponse = await mockMatic.approve(
             fileswapV2Router02.address,
-            amountOfETH
+            amountOfMatic
         )
         console.log(`Sent with hash: ${txResponse.hash}`)
         txReceipt = await txResponse.wait()
@@ -901,7 +950,7 @@ async function addLiquidityFileSwap() {
 
         txResponse = await mockDAI.approve(
             fileswapV2Router02.address,
-            amountOfDAIPERBTC.add(amountOfDAIPerETH)
+            amountOfDAIPERMatic
         )
         console.log(`Sent with hash: ${txResponse.hash}`)
         txReceipt = await txResponse.wait()
@@ -910,47 +959,21 @@ async function addLiquidityFileSwap() {
         /* -----------------------------------------------------------*/
 
         console.log(
-            `Adding DAI/BTC to liquidity pool and waiting for confirmations`
+            `Adding DAI/Matic to liquidity pool and waiting for confirmations`
         )
         let deadline = (
-            (await ethers.provider.getBlock("latest")).timestamp + 1000
-        ).toString()
-
-        txResponse = await fileswapV2Router02
-            .connect(deployer)
-            .addLiquidity(
-                mockWBTC.address,
-                mockDAI.address,
-                amountOfBTC,
-                amountOfDAIPERBTC,
-                amountOfBTC,
-                amountOfDAIPERBTC,
-                deployer.address,
-                deadline
-            )
-
-        console.log(`Sent with hash: ${txResponse.hash}`)
-        txReceipt = await txResponse.wait()
-        console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
-
-        /* -----------------------------------------------------------*/
-
-        console.log(
-            `Adding DAI/ETH to liquidity pool and waiting for confirmations`
-        )
-        deadline = (
             (await ethers.provider.getBlock("latest")).timestamp + 100
         ).toString()
 
         txResponse = await fileswapV2Router02
             .connect(deployer)
             .addLiquidity(
-                mockWETH.address,
+                mockMatic.address,
                 mockDAI.address,
-                amountOfETH,
-                amountOfDAIPerETH,
-                0,
-                0,
+                amountOfMatic,
+                amountOfDAIPERMatic,
+                amountOfMatic,
+                amountOfDAIPERMatic,
                 deployer.address,
                 deadline
             )
@@ -958,6 +981,37 @@ async function addLiquidityFileSwap() {
         console.log(`Sent with hash: ${txResponse.hash}`)
         txReceipt = await txResponse.wait()
         console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
+
+        /* -----------------------------------------------------------*/
+
+        // console.log(
+        //     `Adding DAI/ETH to liquidity pool and waiting for confirmations`
+        // )
+        // deadline = (
+        //     (await ethers.provider.getBlock("latest")).timestamp + 100
+        // ).toString()
+
+        // txResponse = await fileswapV2Router02
+        //     .connect(deployer)
+        //     .addLiquidity(
+        //         mockWETH.address,
+        //         mockDAI.address,
+        //         amountOfETH,
+        //         amountOfDAIPerETH,
+        //         0,
+        //         0,
+        //         deployer.address,
+        //         deadline,
+        //         {
+        //             maxPriorityFeePerGas: (
+        //                 await ethers.provider.getFeeData()
+        //             ).maxPriorityFeePerGas!,
+        //         }
+        //     )
+
+        // console.log(`Sent with hash: ${txResponse.hash}`)
+        // txReceipt = await txResponse.wait()
+        // console.log(`Confirmed with ${txReceipt.confirmations} confirmations!`)
     }
 }
 

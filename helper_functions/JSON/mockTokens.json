@@ -14,6 +14,11 @@
             "name": "Wrapped ETH",
             "symbol": "WETH",
             "address": "0x2b49114E78cEcaE355ba24F69d99d086cAa09c84"
+        },
+        "WMATIC": {
+            "name": "Wrapped Matic",
+            "symbol": "WMATIC",
+            "address": "0x47A1AD0D54c2Ca37eB0f4199b948CEedeDB89B38"
         }
     },
     "mumbai": {
@@ -31,6 +36,11 @@
             "name": "Wrapped ETH",
             "symbol": "WETH",
             "address": "0x52df5817Fdb189A30B584ef712B4d97A1D39003A"
+        },
+        "WMATIC": {
+            "name": "Wrapped Matic",
+            "symbol": "WMATIC",
+            "address": "0x47A1AD0D54c2Ca37eB0f4199b948CEedeDB89B38"
         }
     },
     "hyperspace": {
@@ -48,6 +58,11 @@
             "name": "Wrapped ETH",
             "symbol": "WETH",
             "address": "0x6594C78AA0fD8f18563E17fB6327F3e6F5fa3790"
+        },
+        "WMATIC": {
+            "name": "Wrapped Matic",
+            "symbol": "WMATIC",
+            "address": "0x6D776b17F2C2cd680E9B2ed635E1d7BB8Bf501c2"
         }
     }
 }
